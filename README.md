@@ -1,0 +1,62 @@
+board
+```
+CREATE TABLE `board` (
+	`idx` INT NOT NULL AUTO_INCREMENT,
+	`name` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`pwd` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`title` VARCHAR(1000) NOT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`content` TEXT NOT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`hit` INT NULL DEFAULT '0',
+	`regdate` DATETIME NOT NULL,
+	`ip` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`uid` VARCHAR(50) NULL DEFAULT NULL COMMENT 'FK' COLLATE 'utf8mb4_0900_ai_ci',
+	`upfile` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`originalfile` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`relativedir` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`boardtype` INT NULL DEFAULT '2',
+	PRIMARY KEY (`idx`) USING BTREE
+)
+COLLATE='utf8mb4_0900_ai_ci'
+ENGINE=InnoDB
+AUTO_INCREMENT=434
+;
+```
+comment
+```
+CREATE TABLE `comment` (
+	`idx` INT NOT NULL AUTO_INCREMENT,
+	`bidx` INT NOT NULL,
+	`uid` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`ment` TEXT NOT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`regdate` DATETIME NOT NULL,
+	PRIMARY KEY (`idx`) USING BTREE
+)
+COLLATE='utf8mb4_0900_ai_ci'
+ENGINE=InnoDB
+AUTO_INCREMENT=47
+;
+```
+member
+```
+CREATE TABLE `member` (
+	`idx` INT NOT NULL AUTO_INCREMENT,
+	`uid` VARCHAR(50) NOT NULL COMMENT 'FK' COLLATE 'utf8mb4_0900_ai_ci',
+	`upassword` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`upasscheck` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`name` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`sex` CHAR(1) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`birth` DATE NOT NULL,
+	`hobby` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`regdate` DATE NULL DEFAULT NULL,
+	`upfile` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`originalfile` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`originaldir` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`member_rank` INT NULL DEFAULT '0',
+	PRIMARY KEY (`idx`) USING BTREE,
+	UNIQUE INDEX `uid` (`uid`) USING BTREE
+)
+COLLATE='utf8mb4_0900_ai_ci'
+ENGINE=InnoDB
+AUTO_INCREMENT=194
+;
+```
