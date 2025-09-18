@@ -1,0 +1,71 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ include file="op_top.jsp" %>
+<%
+String idx = request.getParameter("idx");
+String passinput = request.getParameter("passinput");
+
+Connection conn = null;
+PreparedStatement pstmt = null; // PreparedStatement 사용
+ResultSet rs = null;
+String check = null;
+
+try {
+    conn = DB.getConnection();
+    String sql = "";
+    
+    // 로그인 여부 확인
+    if (login_id != null && !login_id.equals("")) {
+        // 로그인 상태: 게시물 작성자의 비밀번호를 member 테이블에서 가져옵니다.
+        sql = "SELECT m.upassword as pass FROM board b JOIN member m ON b.uid = m.uid WHERE b.idx = ?";
+        pstmt = conn.prepareStatement(sql);
+        pstmt.setString(1, idx);
+        
+    } else {
+        // 비회원 상태: board 테이블에 저장된 비밀번호를 가져옵니다.
+        sql = "SELECT pwd FROM board WHERE idx = ?";
+        pstmt = conn.prepareStatement(sql);
+        pstmt.setString(1, idx);
+    }
+    
+    rs = pstmt.executeQuery();
+    
+    // 결과가 있을 경우에만 비밀번호를 가져옵니다.
+    if (rs.next()) {
+        check = rs.getString(1); // 첫 번째 컬럼의 값(pwd 또는 upassword)을 가져옴
+    }
+
+} catch (Exception e) {
+    e.printStackTrace();
+    // 에러 발생 시 사용자에게 알림
+    %>
+    <script type="text/javascript">
+        alert("오류가 발생했습니다. 다시 시도해 주세요.");
+        location.replace("view.jsp?idx=<%= idx %>");
+    </script>
+    <%
+    return; // 스크립트 실행 중단
+} finally {
+    // try-finally 블록에서 반드시 자원 해제
+    if (rs != null) try { rs.close(); } catch (SQLException e) {}
+    if (pstmt != null) try { pstmt.close(); } catch (SQLException e) {}
+    if (conn != null) try { conn.close(); } catch (SQLException e) {}
+}
+
+// 비밀번호 일치 여부 확인
+if (check != null && passinput.equals(check)) {
+    // 비밀번호가 맞을 경우: 수정 페이지로 이동
+    %>
+    <script type="text/javascript">
+        location.replace("modify.jsp?idx=<%= idx %>");
+    </script>
+    <%
+} else {
+    // 비밀번호가 틀렸을 경우: 경고창을 띄우고 이전 페이지로 복귀
+    %>
+    <script type="text/javascript">
+        alert("비밀번호가 틀렸습니다.");
+        location.replace("view.jsp?idx=<%= idx %>");
+    </script>
+    <%
+}
+%>

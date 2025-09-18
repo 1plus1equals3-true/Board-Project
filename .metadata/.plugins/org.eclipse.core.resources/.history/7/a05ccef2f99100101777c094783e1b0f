@@ -1,0 +1,64 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.*"%>
+<%@page import="java.awt.PageAttributes.OrientationRequestedType"%>
+<%@ page import="java.sql.*"%>
+<%@ page import="lib.DB" %>
+
+<%
+Connection conn = null;
+
+String sql = "";
+Statement st = null;
+ResultSet rs = null;
+List <Map<String, String>>memberboardlist = new ArrayList<>();
+
+String sql2 = "";
+Statement st2 = null;
+ResultSet rs2 = null;
+List <Map<String, String>>Noticelist = new ArrayList<>();
+
+try {
+	conn = DB.getConnection();
+	
+	sql = "SELECT * FROM board WHERE boardtype=1 ORDER BY idx DESC LIMIT 5";
+	sql2 = "SELECT * FROM board WHERE boardtype=0 ORDER BY idx DESC LIMIT 5";
+	
+	st = conn.createStatement();
+	st2 = conn.createStatement();
+	rs = st.executeQuery(sql);
+	rs2 = st.executeQuery(sql2);
+	
+}catch(Exception e){ 
+    e.printStackTrace();
+    out.println(sql);
+}
+
+while (rs.next()) {
+    String idx = rs.getString("idx");
+    String title = rs.getString("title");
+    
+    Map<String, String> row = new HashMap<>();
+    row.put("idx", idx);
+    row.put("title", title);
+    
+    memberboardlist.add(row);
+}
+
+while (rs2.next()) {
+    String idx = rs.getString("idx");
+    String title = rs.getString("title");
+    
+    Map<String, String> row = new HashMap<>();
+    row.put("idx", idx);
+    row.put("title", title);
+    
+    Noticelist.add(row);
+}
+
+    // request 객체에 데이터 저장
+    request.setAttribute("memberboardlist", memberboardlist);
+
+    // 뷰(View) 역할을 하는 JSP로 포워딩
+    RequestDispatcher dispatcher = request.getRequestDispatcher("../board/main.jsp");
+    dispatcher.forward(request, response);
+%>

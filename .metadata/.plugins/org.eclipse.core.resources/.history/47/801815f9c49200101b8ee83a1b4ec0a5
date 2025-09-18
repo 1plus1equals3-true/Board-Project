@@ -1,0 +1,219 @@
+<%@page import="java.awt.PageAttributes.OrientationRequestedType"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*"%>        
+<%@ page import="lib.DB" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>View</title>
+<style>
+
+.profile-table {
+    width: 100%;
+    max-width: 600px;
+    margin: 20px auto;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-family: Arial, sans-serif;
+    background-color: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px; 
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.profile-table tr {
+    transition: background-color 0.3s ease;
+}
+
+.profile-table tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.profile-table tr:hover {
+    /*background-color: #f1f3f5;*/
+}
+
+.profile-table td {
+    padding: 15px 25px;
+    vertical-align: top;
+    /*border-bottom: 1px solid #dee2e6;  */
+}
+
+.profile-table td:first-child {
+    font-weight: bold;
+    color: #495057;
+    width: 150px;
+    text-align: right;
+    padding-right: 10px;
+}
+
+.profile-table td:last-child {
+    color: #343a40;
+    text-align: left;
+}
+
+.profile-table tr:last-child td {
+    border-bottom: none;
+    text-align: center;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.profile-table img {
+    max-width: 30%;
+    object-fit: contain;
+    border-radius: 4px;
+    border: 1px solid #ced4da;
+}
+
+.profile-table button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    margin: 0 5px;
+}
+
+.profile-table a:nth-child(1) button { /* 수정 */
+    background-color: #007bff;
+}
+
+.profile-table a:nth-child(2) button { /* 삭제 */
+    background-color: #dc3545;
+}
+
+.profile-table a:nth-child(3) button { /* 리스트 */
+    background-color: #6c757d;
+}
+
+.profile-table button:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
+}
+
+.profile-table button:active {
+    transform: translateY(0);
+}
+</style>
+</head>
+<body>
+<%@ include file="../board/op_top.jsp" %>
+<h2>회 원 정 보</h2>
+
+<%
+String uid = request.getParameter("uid");
+
+
+   Connection conn=null;
+   Statement st = null;
+   ResultSet rs = null;
+    
+   String sql = null;
+
+  try{
+    
+    conn = DB.getConnection();
+    //out.println("연결 성공");
+    
+   //쿼리문 작성
+   sql = "select * from member where uid='"+uid+"'";
+   
+   //Connection객체로부터 Statement객체를 얻어내는 코드
+   st = conn.createStatement();
+   
+   rs = st.executeQuery(sql);
+    
+  }catch(Exception e){ 
+    e.printStackTrace();
+    out.println(sql);
+  }
+%>
+
+
+<%
+if(rs != null){
+   rs.next();
+   String idx = rs.getString("idx");
+   String upassword = rs.getString("upassword");
+   String name = rs.getString("name");
+   String sex = rs.getString("sex");
+   String birth = rs.getString("birth");
+   String hobby = rs.getString("hobby");
+   String regdate = rs.getString("regdate");
+   String upfile = rs.getString("upfile");
+   String originalfile = rs.getString("originalfile");
+%>
+<table class="profile-table">
+<tr>
+<td>회원번호 :</td>
+<td><%= idx %></td>
+</tr>
+<tr>
+<td>아이디 :</td>
+<td><%= uid %></td>
+</tr>
+<tr>
+<td>패스워드 :</td>
+<td><%= upassword %></td>
+</tr>
+<tr>
+<td>이름 :</td>
+<td><%= name %></td>
+</tr>
+<tr>
+<td>성별 :</td>
+<td><%= sex %></td>
+</tr>
+<tr>
+<td>생일 :</td>
+<td><%= birth %></td>
+</tr>
+<tr>
+<td>취미 :</td>
+<td><%= hobby %></td>
+</tr>
+<tr>
+<td>등록일 :</td>
+<td><%= regdate %></td>
+</tr>
+<tr>
+<td>파일 :</td>
+<td>
+	<img alt="<%= originalfile %>" src="Download.jsp?uid=<%= uid %>"><br>
+	<% if (upfile != null) {
+		%>
+		<a href="Download.jsp?uid=<%= uid %>" target="_blank">다운로드</a>
+		<% } %>
+</td>
+</tr>
+<tr>
+<td colspan="2"><a href="Modify.jsp?uid=<%= uid %>"><button type="button">수정</button></a>
+<a href="Delete.jsp?uid=<%= uid %>"><button type="button">삭제</button></a>
+<a href="List.jsp"><button type="button">리스트</button></a></td>
+</tr>
+</table>
+<%
+}
+%>
+<%@ include file="../board/op_bot.jsp" %>
+</body>
+</html>
+
+<%
+if (rs != null){
+   rs.close();
+}
+
+if (st != null){
+   st.close();
+}
+
+if (conn != null){
+   conn.close();
+}
+%>

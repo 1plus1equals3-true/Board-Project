@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<item key="hasShownOverlayPopupBefore" value="true"/>
+	<item key="replaceBarOpen" value="false"/>
+	<list key="searchhistory">
+		<item value="document.getElementById"/>
+		<item value="ment-${cidx}"/>
+		<item value="commentDisplayArea"/>
+		<item value="const newCommentText = formElement.querySelector(&apos;textarea[name=&quot;commentmodify&quot;]&apos;).value;"/>
+		<item value="temp_rank"/>
+		<item value="pass"/>
+		<item value="delpass"/>
+		<item value="idx"/>
+		<item value="login_rank"/>
+		<item value="login_id"/>
+		<item value="login"/>
+		<item value="login_idx"/>
+		<item value="boardtype"/>
+		<item value="cidx"/>
+		<item value="pageCount"/>
+	</list>
+</section>

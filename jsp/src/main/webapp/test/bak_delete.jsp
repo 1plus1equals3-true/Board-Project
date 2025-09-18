@@ -1,0 +1,96 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>삭제</title>
+<style>
+*{
+	margin: 0 auto;
+	padding: 0;
+	text-align: center;
+}
+.delete-form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 400px;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.delete-form input[type="password"] {
+    flex-grow: 1;
+    padding: 10px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.delete-form input[type="submit"],
+.delete-form .btn-cancel {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.delete-form input[type="submit"] {
+    background-color: #dc3545; /* 삭제 버튼 색상 (빨강) */
+    color: white;
+}
+
+.delete-form input[type="submit"]:hover {
+    background-color: #c82333;
+}
+
+.delete-form .btn-cancel {
+    background-color: #6c757d; /* 취소 버튼 색상 (회색) */
+    color: white;
+}
+
+.delete-form .btn-cancel:hover {
+    background-color: #5a6268;
+}
+
+.delete-form a {
+    text-decoration: none;
+}
+.delete-message {
+    text-align: center;
+    font-size: 16px;
+    color: #495057;
+    margin-bottom: 10px;
+}
+</style>
+</head>
+<body>
+<%
+String idx = request.getParameter("idx");
+
+
+%>
+<%@ include file="op_top.jsp" %>
+<%@ include file="op_logincheck.jsp" %>
+
+
+<h1>게시글 삭제</h1><br>
+<p class="delete-message">삭제하시려면 비밀번호를 입력하세요.</p>
+<form action="delete_proc.jsp?idx=<%= idx %>" method="post" class="delete-form">
+	<input type="password" name="delpass">
+	<input type="submit" value="삭제">
+	<a href="view.jsp?idx=<%= idx %>"><button type="button" class="btn-cancel">취소</button></a>
+</form>
+
+
+</body>
+</html>

@@ -1,0 +1,7 @@
+String sql = "select count(*) as cnt from board WHERE boardtype = '0'";
+
+Connection conn = null;
+Statement st = null;
+ResultSet rs = null;
+%>
+<%@ include file="op_paging_cal.jsp" %>

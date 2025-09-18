@@ -1,0 +1,38 @@
+<%@page import="java.util.Enumeration"%>
+<%@page import="com.oreilly.servlet.multipart.DefaultFileRenamePolicy"%>
+<%@page import="com.oreilly.servlet.MultipartRequest"%>
+<%@page import="java.io.File"%>
+<%@ page import="java.util.Date" %>
+<%@ page import="java.text.SimpleDateFormat" %>
+<%@ page import="java.io.IOException"%>
+<%@ page import="java.nio.file.*"%>
+<%@ page import="java.io.*" %>    
+
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*" %>
+<%@ page import="lib.DB" %>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+
+<% 
+String ip = java.net.Inet4Address.getLocalHost().getHostAddress();
+out.print(ip);
+%>
+
+<button type="button" onclick="">스크립트</button>
+
+<script>
+function changeColor() {
+	let userName = prompt("당신의 이름은 무엇인가요?", "1");
+	let pwd = prompt("비밀번호를 입력하세요", "2");
+
+
+	if (userName !== null) {
+		location.replace("../board/view.jsp?idx="+userName+"&pwd="+pwd);
+	} else {
+	  	console.log("이름 입력이 취소되었습니다.");
+	}
+}
+
+</script>

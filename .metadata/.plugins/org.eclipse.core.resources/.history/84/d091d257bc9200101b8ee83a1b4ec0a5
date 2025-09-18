@@ -1,0 +1,137 @@
+<%@page import="java.awt.PageAttributes.OrientationRequestedType"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*"%>        
+<%@ page import="lib.DB" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>View</title>
+<style>
+td {
+padding: 10px;
+text-align: center;
+}
+img {
+width: 200px;
+object-fit: contain;
+}
+</style>
+</head>
+<body>
+<h2>회 원 정 보</h2>
+
+<%
+String uid = request.getParameter("uid");
+
+
+   Connection conn=null;
+   Statement st = null;
+   ResultSet rs = null;
+    
+   String sql = null;
+
+  try{
+    
+    conn = DB.getConnection();
+    //out.println("연결 성공");
+    
+   //쿼리문 작성
+   sql = "select * from member where uid='"+uid+"'";
+   
+   //Connection객체로부터 Statement객체를 얻어내는 코드
+   st = conn.createStatement();
+   
+   rs = st.executeQuery(sql);
+    
+  }catch(Exception e){ 
+    e.printStackTrace();
+    out.println(sql);
+  }
+%>
+
+
+<%
+if(rs != null){
+   rs.next();
+   String idx = rs.getString("idx");
+   String upassword = rs.getString("upassword");
+   String name = rs.getString("name");
+   String sex = rs.getString("sex");
+   String birth = rs.getString("birth");
+   String hobby = rs.getString("hobby");
+   String regdate = rs.getString("regdate");
+   String upfile = rs.getString("upfile");
+   String originalfile = rs.getString("originalfile");
+%>
+<table class="profile-table" border="0">
+<tr>
+<td>기본키 :</td>
+<td><%= idx %></td>
+</tr>
+<tr>
+<td>아이디 :</td>
+<td><%= uid %></td>
+</tr>
+<tr>
+<td>패스워드 :</td>
+<td><%= upassword %></td>
+</tr>
+<tr>
+<td>이름 :</td>
+<td><%= name %></td>
+</tr>
+<tr>
+<td>성별 :</td>
+<td><%= sex %></td>
+</tr>
+<tr>
+<td>생일 :</td>
+<td><%= birth %></td>
+</tr>
+<tr>
+<td>취미 :</td>
+<td><%= hobby %></td>
+</tr>
+<tr>
+<td>등록일 :</td>
+<td><%= regdate %></td>
+</tr>
+<tr>
+<td>파일 :</td>
+<td>
+	<img alt="<%= originalfile %>" src="Download.jsp?uid=<%= uid %>"><br>
+	<% if (upfile != null) {
+		%>
+		<a href="Download.jsp?uid=<%= uid %>" target="_blank">다운로드</a>
+		<% } %>
+</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="Modify.jsp?uid=<%= uid %>"><button type="button">수정</button></a>
+<a href="Delete.jsp?uid=<%= uid %>"><button type="button">삭제</button></a>
+<a href="List.jsp"><button type="button">리스트</button></a></td>
+</tr>
+</table>
+<%
+}
+%>
+
+</body>
+</html>
+
+<%
+if (rs != null){
+   rs.close();
+}
+
+if (st != null){
+   st.close();
+}
+
+if (conn != null){
+   conn.close();
+}
+%>

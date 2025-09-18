@@ -1,0 +1,243 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+    <%@ page import="java.sql.*" %>
+    <%@ page import="lib.DB" %>
+
+<%
+String sql = "";
+String key = request.getParameter("key");
+String word = request.getParameter("word");
+if (key == null) {key = "";}
+if (word == null) {word = "";}
+
+if(word != null && !word.equals("")) {
+	sql = " SELECT count(*) as cnt from board where boardtype = '0' and "+key+" like '%"+word+"%'";
+}else {
+	sql = "select count(*) as cnt from board WHERE boardtype = '0'";
+}
+
+Connection conn = null;
+Statement st = null;
+ResultSet rs = null;
+%>
+<%@ include file="op_paging_cal.jsp" %>
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>게시판</title>
+<style>
+body {
+	min-height: 1200;
+}
+*{
+	margin: 0 auto;
+	padding: 0;
+	text-align: center;
+	box-sizing: border-box;
+}
+
+.wwrite {
+	padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    background-color: #4CAF50;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.wwrite:hover {
+    background-color: #0056b3;
+}
+/*페이징*/
+.aa {
+	color: black;
+    padding: 8px 16px;
+    text-decoration: none;
+    transition: background-color .3s;
+    border: 1px solid #ddd;
+    margin: 0 4px;
+    border-radius: 4px;
+}
+.aah:hover:not(.active) {
+	background-color: #ddd;
+}
+.aaa {
+	background-color: #4CAF50;
+    color: white;
+    border: 1px solid #4CAF50;
+}
+.aax {
+	color: gray;
+}
+/*검색*/
+.search-form {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* 요소들 사이의 간격 */
+    padding: 20px;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    max-width: 500px;
+    margin: 20px auto; /* 중앙 정렬 */
+}
+
+.search-form select,
+.search-form input[type="text"] {
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #495057;
+}
+
+.search-form select {
+    background-color: #fff;
+    cursor: pointer;
+}
+
+.search-form input[type="text"] {
+    flex-grow: 1; /* 남은 공간을 채우도록 */
+}
+
+.search-form button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    background-color: #4CAF50;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.search-form button:hover {
+    background-color: #0056b3;
+}
+/*게시판 테이블*/
+.board-table {
+    width: 80%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin: 0 auto;
+}
+
+.board-table th, .board-table td {
+    padding: 12px 15px;
+    border: 1px solid #dee2e6;
+    text-align: center;
+}
+
+/* 첫 번째 행 (헤더) 강조 및 호버 효과 제거 */
+.board-table thead tr {
+    background-color: #4CAF50; /* 더 진한 배경색 */
+    color: white; /* 글씨색을 흰색으로 변경 */
+    font-size: 15px;
+}
+
+/* 본문 (tbody) 행 스타일 */
+.board-table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.board-table tbody tr:hover {
+    background-color: #e2e6ea;
+}
+
+.board-table a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.board-table a:hover {
+    text-decoration: underline;
+}
+.td50 {
+	width: 50%;
+}
+.td10 {
+	width: 10%;
+}
+.td20 {
+	width: 20%;
+}
+</style>
+</head>
+<body>
+<%
+
+try {
+	conn = DB.getConnection();
+	
+	if(word != null && !word.equals("")) {
+		sql = "SELECT b.*, m.name AS memname, COUNT(c.bidx) AS comment_count FROM board b LEFT JOIN member m ON b.uid = m.uid LEFT JOIN comment c ON b.idx = c.bidx WHERE boardtype='0' and b."+key+" LIKE '%"+word+"%' GROUP BY b.idx ORDER BY b.idx DESC limit "+offset+"," + scale;
+	} else {
+		sql = "SELECT b.*, COUNT(c.bidx) AS comment_count FROM board b LEFT JOIN comment c ON b.idx = c.bidx WHERE boardtype='0' GROUP BY b.idx ORDER BY b.idx DESC limit "+offset+"," + scale;
+	}
+	
+	
+	st = conn.createStatement();
+	rs = st.executeQuery(sql);
+	
+}catch(Exception e){ 
+    e.printStackTrace();
+    out.println(sql);
+}
+
+%>
+<%@ include file="op_top.jsp" %>
+<h1>공 지 사 항</h1><br>
+<%
+	if(word != null && !word.equals("")) {
+%>
+		검색컬럼: <%= key %> | 검색어: <%= word %> | 검색된 갯수: <%= (int)count %>
+<%
+	}
+%>
+
+<table class="board-table">
+	<thead>
+		<tr>
+			<td class="td10">번호</td>
+			<td class="td50">제목</td>
+			<td class="td10">작성자</td>
+			<td class="td20">작성일</td>
+			<td class="td10">조회수</td>
+		</tr>
+	</thead>
+<%
+   while (rs.next()) {
+      String idx = rs.getString("idx");
+      String name = rs.getString("name");
+      String title = rs.getString("title");
+      String content = rs.getString("content");
+      String hit = rs.getString("hit");
+      String regdate = rs.getString("regdate");
+      String ip = rs.getString("ip");
+      String comment_count = rs.getString("comment_count");
+   
+%>
+	<tbody>
+		<tr>
+			<td><%= idx %></td>
+			<td style="text-align: left;"><a href="view.jsp?idx=<%= idx %>"><%= title %><% if(!comment_count.equals("0")){ %> (<%= comment_count %>) <% } %></a></td>
+			<td><%= name %></td>
+			<td><%= regdate %></td>
+			<td><%= hit %></td>
+		</tr>
+	</tbody>
+<% } %>
+	
+</table>
+<br>
+<a href="write.jsp"><button type="button" class="wwrite">글쓰기</button></a>
+<br><br>
+
+<%@ include file="op_paging.jsp" %>
+<%@ include file="op_bot.jsp" %>
+</body>
+</html>

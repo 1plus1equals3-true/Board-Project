@@ -1,0 +1,145 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.util.Date" %>
+<%@ page import="java.text.SimpleDateFormat" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>회원가입</title>
+<style>
+td {
+padding: 10px;
+text-align: center;
+}
+</style>
+</head>
+<body>
+<%
+  Date today = new Date(); // 현재 날짜와 시간 객체 생성
+  SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy"); // 년도 형식 지정
+  String year = yearFormat.format(today); // 년도만 추출
+  int intyear = Integer.parseInt(year);
+%>
+	<h2>회 원 가 입</h2>
+<%
+	String loginerr = request.getParameter("loginerr");
+	if (loginerr != null) out.print("비밀번호가 일치하지 않습니다.");
+%>
+
+	<form action="Join_proc.jsp" method="post" enctype="multipart/form-data" onsubmit="">
+		<table>
+		<tr>
+		<td>아이디</td>
+		<td><input type="text" name="uid"></td>
+		</tr>
+		
+		<tr>
+		<td>비밀번호</td>
+		<td><input type="password" name="upass1"></td>
+		</tr>
+		
+		<tr>
+		<td>비밀번호 확인</td>
+		<td><input type="password" name="upass2"></td>
+		</tr>
+		
+		<tr>
+		<td>이름</td>
+		<td><input type="text" name="uname"></td>
+		</tr>
+		
+		<tr>
+		<td>성별</td>
+		<td><input type="radio" name="sex" value="M" checked="checked">남자
+			<input type="radio" name="sex" value="F">여자</td>
+		</tr>
+		
+		<tr>
+		<td>생일</td>
+		<td>
+		<select name="yyyy">
+		<% 
+			for (int i=1950; i<=intyear; i++) {
+		%>
+				<option value="<%= i %>"><%= i %></option>
+		<%
+			}
+		%>
+		</select>년
+		
+		<select name="mm">
+		<% 
+			for (int i=1; i<=12; i++) {
+		%>
+				<option value="<%= i %>">
+										<% if (i < 10) { %>
+											0<%= i %>
+										<% } else { %>
+											<%= i %>
+										<% } %>
+				</option>
+		<%
+			}
+		%>
+		</select>월
+		
+		<select name="dd">
+		<% 
+			for (int i=1; i<=31; i++) {
+		%>
+				<option value="<%= i %>">
+										<% if (i < 10) { %>
+											0<%= i %>
+										<% } else { %>
+											<%= i %>
+										<% } %>
+				</option>
+		<%
+			}
+		%>
+		</select>일
+		</td>
+		</tr>
+		
+		<tr>
+		<td>취미</td>
+		<td><input type="checkbox" name="hobby" value="football">축구
+			<input type="checkbox" name="hobby" value="basketball">농구
+			<input type="checkbox" name="hobby" value="Volleyball">배구</td>
+		</tr>
+		
+		<tr>
+		<td>사진</td>
+		<td><input type="file" name="upfile" accept=".gif, .jpg, .png"></td>
+		</tr>
+
+		<tr>
+		<td></td>
+		<td><input type="button" onclick="submit_check()" value="가입">
+			<input type="reset" value="리셋">
+		<a href="List.jsp"><button type="button">리스트</button></a>
+		</td>
+		</tr>
+		
+		</table>
+	</form>
+
+</body>
+
+
+<script type="text/javascript">
+function submit_check() {
+	var uid = document.getElementById("uid");
+	   if(uid.value.trim().length < 4 ){
+	      alert('아이디');
+	      uid.focus();
+	      return;
+	}
+	   document.join_form.submit();
+}
+</script>
+
+
+</html>
+

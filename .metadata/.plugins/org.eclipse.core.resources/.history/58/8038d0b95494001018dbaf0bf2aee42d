@@ -1,0 +1,65 @@
+<%@page import="java.util.Enumeration"%>
+<%@page import="com.oreilly.servlet.multipart.DefaultFileRenamePolicy"%>
+<%@page import="com.oreilly.servlet.MultipartRequest"%>
+<%@page import="java.io.File"%>
+<%@ page import="java.util.Date" %>
+<%@ page import="java.text.SimpleDateFormat" %>
+<%@ page import="java.io.IOException"%>
+<%@ page import="java.nio.file.*"%>
+
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*" %>
+<%@ page import="lib.DB" %>
+<%@ include file="op_top.jsp" %>
+<%@ include file="op_logincheck.jsp" %>
+<%
+request.setCharacterEncoding("utf-8");
+
+String sql = null;
+Connection conn=null;
+PreparedStatement ps = null;
+ResultSet rs = null;
+
+String idx = request.getParameter("idx");
+String cidx = request.getParameter("cidx");
+String commentmodify = request.getParameter("commentmodify");
+
+boolean isSuccess = false;
+String message = "";
+
+try{
+	 
+	conn = DB.getConnection();
+
+	sql = "update comment set ment=? where idx=?";
+	ps = conn.prepareStatement(sql);
+	ps.setString(1, commentmodify);
+	ps.setString(2, cidx);
+	ps.executeUpdate();
+	 
+%>
+<script>
+location.replace("view.jsp?idx=<%= idx %>");
+</script>
+<%
+
+ 	
+ }
+ catch(Exception e){ 
+	  out.println(e.toString());
+	  out.println(sql);
+	}
+ finally {
+	  	if (rs != null){
+		   rs.close();
+		}
+		if (ps != null){
+		   ps.close();
+		}
+		if (conn != null){
+		   conn.close();
+		}
+ }
+
+%>

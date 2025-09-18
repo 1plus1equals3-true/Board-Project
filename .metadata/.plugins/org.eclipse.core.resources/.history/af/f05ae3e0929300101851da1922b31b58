@@ -1,0 +1,72 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ include file="op_top.jsp" %>
+<%
+String idx = request.getParameter("idx");
+String passinput = request.getParameter("passinput");
+
+Connection conn = null;
+PreparedStatement pstmt = null;
+ResultSet rs = null;
+String check = null; // 초기값을 null로 설정하여 안전하게 시작
+
+try {
+    conn = DB.getConnection();
+    String sql;
+
+    if (login_id == null || login_id.equals("")) {
+        // 로그인하지 않은 사용자는 board 테이블의 pwd 컬럼 확인
+        sql = "SELECT pwd FROM board WHERE idx = ?";
+    } else {
+        // 로그인한 사용자는 member 테이블의 upassword 컬럼 확인
+        sql = "SELECT m.upassword AS pass FROM board b JOIN member m ON b.uid = m.uid WHERE b.idx = ?";
+    }
+    
+    pstmt = conn.prepareStatement(sql);
+    pstmt.setString(1, idx);
+    
+    rs = pstmt.executeQuery();
+    if (rs.next()) {
+        if (login_id == null || login_id.equals("")) {
+            check = rs.getString("pwd");
+        } else {
+            check = rs.getString("pass");
+        }
+    }
+    
+    // **여기서 비교 로직을 강화합니다.**
+    // 1. check가 null이 아닌지 먼저 확인
+    // 2. passinput이 null이 아닌지 확인
+    // 3. 양쪽 문자열의 앞뒤 공백을 제거(trim()) 후 비교
+    if (check != null && passinput != null && passinput.trim().equals(check.trim())) {
+        // 비밀번호 일치
+%>
+        <script type="text/javascript">
+            location.replace("modify.jsp?idx=<%= idx %>");
+        </script>
+<%
+    } else {
+        // 비밀번호 불일치 또는 데이터 오류
+%>
+        <script type="text/javascript">
+            alert("비밀번호가 틀렸습니다.");
+            location.replace("view.jsp?idx=<%= idx %>");
+        </script>
+<%
+    }
+
+} catch (Exception e) {
+    e.printStackTrace();
+    // 오류 발생 시 사용자에게 알리고 페이지 이동
+%>
+    <script type="text/javascript">
+        alert("처리 중 문제가 발생했습니다.");
+        location.replace("view.jsp?idx=<%= idx %>");
+    </script>
+<%
+} finally {
+    // DB 리소스는 항상 닫아야 합니다.
+    if (rs != null) try { rs.close(); } catch (SQLException e) {}
+    if (pstmt != null) try { pstmt.close(); } catch (SQLException e) {}
+    if (conn != null) try { conn.close(); } catch (SQLException e) {}
+}
+%>

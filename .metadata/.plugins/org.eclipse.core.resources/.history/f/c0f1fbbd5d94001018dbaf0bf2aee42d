@@ -1,0 +1,687 @@
+<%@page import="java.awt.PageAttributes.OrientationRequestedType"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*"%>        
+<%@ page import="lib.DB" %>
+<%@ page trimDirectiveWhitespaces="true" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>글보기</title>
+<style>
+*{
+	margin: 0 auto;
+	padding: 0;
+	text-align: center;
+	box-sizing: border-box;
+}
+.view-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin: 20px auto;
+    max-width: 800px;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.view-table tr:first-child td {
+    background-color: #f8f9fa;
+    font-size: 1.2em;
+    font-weight: bold;
+    padding: 15px;
+    text-align: left;
+    border-bottom: 2px solid #ced4da;
+}
+
+.view-table tr:nth-child(2) td {
+    padding: 10px 15px;
+    color: #6c757d;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.view-table tr:nth-child(n) td {
+    padding: 10px 15px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.view-table tr:nth-child(2) td:not(:last-child) {
+    /*border-right: 1px solid #e9ecef;*/
+}
+
+.view-table tr:last-child td {
+    padding: 20px 15px;
+    line-height: 1.6;
+    word-break: break-all;
+    min-height: 200px;
+}
+
+.view-table .text {
+    white-space: pre-wrap;
+}
+
+.button-group {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.button-group button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin: 0 4px;
+}
+
+.button-group .btn-modify {
+    background-color: #ffc107;
+    color: #343a40;
+}
+
+.button-group .btn-modify:hover {
+    background-color: #e0a800;
+}
+
+.button-group .btn-delete {
+    background-color: #dc3545;
+    color: white;
+}
+
+.button-group .btn-delete:hover {
+    background-color: #c82333;
+}
+
+.button-group .btn-list {
+    background-color: #007bff;
+    color: white;
+}
+
+.button-group .btn-list:hover {
+    background-color: #0056b3;
+}
+
+.comment-form {
+    display: flex; /* Use flexbox to align items horizontally */
+    align-items: center; /* Vertically center the input and button */
+    padding: 10px 15px; /* Add some padding, similar to the table cells */
+}
+
+.comment-form textarea {
+    flex-grow: 1; /* Make the textarea take up the available space */
+    margin-right: 10px; /* Add some space between the textarea and the button */
+    padding: 8px; /* Padding inside the textarea */
+    border: 1px solid #ced4da; /* A subtle border */
+    border-radius: 4px; /* Slightly rounded corners */
+    font-size: 14px; /* Match the font size of the table */
+    resize: vertical; /* Allow vertical resizing, but not horizontal */
+    min-height: 50px; /* Give it a minimum height */
+    text-align: left;
+}
+
+.comment-form button {
+    padding: 8px 16px; /* Padding for the button */
+    background-color: #007bff; /* Use a primary color, similar to your list button */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.comment-form button:hover {
+    background-color: #0056b3;
+}
+
+.delete-button {
+    display: inline-block; /* <a> 태그가 패딩과 마진을 가질 수 있도록 블록 요소처럼 동작하게 함 */
+    padding: 8px 16px; /* 폼 버튼과 동일한 패딩 */
+    background-color: #dc3545; /* 삭제를 의미하는 빨간색 */
+    color: white; /* 흰색 글자 */
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-decoration: none; /* 기본 밑줄 제거 */
+}
+
+.delete-button:hover {
+    background-color: #c82333; /* 마우스를 올렸을 때 더 어두운 빨간색 */
+}
+
+.modify-button {
+    display: inline-block; /* <a> 태그가 패딩과 마진을 가질 수 있도록 블록 요소처럼 동작하게 함 */
+    padding: 8px 16px; /* 폼 버튼과 동일한 패딩 */
+    background-color: #ffc107; /* 주황색 */
+    color: black; /*  글자 */
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-decoration: none; /* 기본 밑줄 제거 */
+}
+
+.modify-button:hover {
+    background-color: #e0a800; /* 더 진한 주황색 호버 */
+}
+
+.edit-form {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* 요소들 사이에 간격을 줍니다 */
+}
+
+.edit-form textarea {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    resize: vertical;
+    min-height: 50px;
+    text-align: left;
+}
+
+.edit-form .btn-submit { /* 수정 버튼 스타일 */
+    padding: 8px 16px;
+    background-color: #ffc107; /* modify-button 색상과 맞춤 */
+    color: black;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.edit-form .btn-cancel { /* 취소 버튼 스타일 */
+    padding: 8px 16px;
+    background-color: #dc3545; /* delete-button 색상과 맞춤 */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+section img {
+width: 200px;
+object-fit: contain;
+}
+
+.td40 {
+	width: 40%;
+}
+
+.td20 {
+	width: 20%;
+}
+
+</style>
+</head>
+<body>
+
+<%
+String idx = request.getParameter("idx");
+
+Connection conn=null;
+Statement st = null;
+PreparedStatement ps = null;
+ResultSet rs = null;
+ 
+String sql = null;
+
+String cidx = "";
+String comname = "";
+String ment = "";
+String comdate = "";
+String cuid = "";
+String boardtype = "";
+int temp_rank = -1;
+
+try{
+    
+   conn = DB.getConnection();
+
+   sql = "SELECT b.* FROM board b where b.idx='"+idx+"'";
+   st = conn.createStatement();
+   rs = st.executeQuery(sql);
+    
+  }catch(Exception e){ 
+    e.printStackTrace();
+    out.println(sql);
+}
+
+//--------
+
+if(rs != null){
+	rs.next();
+	String name = rs.getString("name");
+	String title = rs.getString("title");
+	String content = rs.getString("content");
+	String hit = rs.getString("hit");
+	String regdate = rs.getString("regdate");
+	String ip = rs.getString("ip");
+	String uid = rs.getString("uid");
+	String upfile = rs.getString("upfile");
+	String originalfile = rs.getString("originalfile");
+	boardtype = rs.getString("boardtype");
+	
+	int ihit = Integer.parseInt(hit);
+	ihit+=1;
+	hit = Integer.toString(ihit);
+	
+try {
+	
+	conn = DB.getConnection();
+	sql = "update board set hit=? where idx=?";
+	ps = conn.prepareStatement(sql);
+	ps.setString(1, hit);
+	ps.setString(2, idx);
+	ps.executeUpdate();
+	
+}catch(Exception e){ 
+	  out.println(e.toString());
+	  out.println(sql);
+}
+
+	
+	
+
+%>
+<%@ include file="op_top.jsp" %>
+<% temp_rank = login_rank; %>
+<section class="min-height">
+<h1>작성 글</h1><br>
+
+<table class="view-table">
+
+	<tr>
+		<td colspan="4"><%= title %></td>
+	</tr>
+	
+	<tr>
+		<td>작성자 : <%= name %></td>
+		<td>작성일자 : <%= regdate %></td>
+		<td>조회수 : <%= hit %></td>
+		<td>아이피 : <%= ip %></td>
+	</tr>
+	
+	<tr>
+		<td colspan="4"><div style="min-height: 200px;"><%= content.replace("\r\n","<br>") %></div></td>
+	</tr>
+	
+	<tr>
+		<% if (upfile != null) { %>
+			<td>파일</td>
+			<td colspan="3">
+				<img alt="<%= originalfile %>" src="download.jsp?idx=<%= idx %>"><br>
+				<a href="download.jsp?idx=<%= idx %>" target="_blank">다운로드</a>
+		<% } %>
+			</td>
+	</tr>
+	
+</table>
+
+<%
+try {
+	conn = DB.getConnection();
+	sql = " SELECT c.*, m.name as comname from comment c LEFT JOIN member m ON c.uid = m.uid where bidx="+ idx;
+	st = conn.createStatement();
+	rs = st.executeQuery(sql);
+	
+}catch(Exception e){ 
+    e.printStackTrace();
+    out.println(sql);
+}
+%>
+
+<table class="view-table">
+
+<tr>
+	<td colspan="4">댓글</td>
+</tr>
+
+<tr>
+	<td class="td20">작성자</td>
+	<td class="td40">내용</td>
+	<td class="td20">작성일자</td>
+	<td class="td20"></td>
+</tr>
+
+<%
+   while (rs.next()) {
+      cidx = rs.getString("idx");
+      comname = rs.getString("comname");
+      ment = rs.getString("ment");
+      comdate = rs.getString("regdate");
+      cuid = rs.getString("uid");
+   
+%>
+		
+	<tr id="row-<%= cidx %>">
+	    <td><%= comname %></td>
+	    <td id="ment-<%= cidx %>" style="text-align: left;"><%= ment.replace("\r\n","<br>") %></td>
+	    <td><%= comdate %></td>
+	<% if (cuid != null && cuid.equals(login_id)) { %>
+	    <td>
+	        <button class="modify-button" onclick="toggleEditRow('<%= cidx %>')">수정</button>
+	        <a href="deletecheck_com.jsp?idx=<%= cidx %>" class="delete-button">삭제</a>
+	    </td>
+    <% }else { %>
+    	<td></td>
+    <% } %>
+	</tr>
+
+	<tr id="edit-row-<%= cidx %>" style="display:none;">
+	    <td><%= comname %></td>
+	    <td colspan="3">
+	    	<form id="editForm-<%= cidx %>" action="comment_modify.jsp" method="post" class="edit-form">
+	    		<input type="hidden" name="idx" value="<%= idx %>">
+	    		<input type="hidden" name="cidx" value="<%= cidx %>">
+		        <textarea name="commentmodify"><%= ment %></textarea>
+		        <button type="submit" class="btn-submit">수정</button>
+		        <button type="button" class="btn-cancel" onclick="cancelEdit('<%= cidx %>')">취소</button>
+	        </form>
+	        
+	    </td>
+	</tr>
+
+<% } %>
+
+<% if(login_id != null) { %>
+<tr>
+	<td></td>
+	<td colspan="3">
+		<form action="comment_proc.jsp" method="post" class="comment-form">
+			<input type="hidden" name="bidx" value="<%= idx %>">
+			<textarea name="commenttext"></textarea>
+			<button type="submit">등록</button>
+		</form>
+	</td>
+</tr>
+<% }else{ %>
+<tr>
+	<td></td>
+	<td colspan="3">
+		댓글을 작성하려면 로그인하세요.
+	</td>
+</tr>
+<% } %>
+</table>
+
+<br>
+<div class="button-group">
+<button type="button" class="btn-modify" onclick="modify()">수정</button>
+<button type="button" class="btn-delete" onclick="wdelete()">삭제</button>
+<button type="button" onclick="list_back()" class="btn-list">목록</button>
+</div>
+</section>
+<%@ include file="op_bot.jsp" %>
+<%
+}
+
+if (rs != null){
+   rs.close();
+}
+
+if (ps != null){
+	   ps.close();
+}
+
+if (st != null){
+   st.close();
+}
+
+if (conn != null){
+   conn.close();
+}
+%>
+
+<script>
+
+//폼 제출 이벤트를 가로채 Ajax 요청을 보냅니다.
+document.querySelectorAll('.edit-form').forEach(form => {
+    form.addEventListener('submit', function(event) {
+        // 1. 폼의 기본 제출 동작(페이지 리프레시) 방지
+        event.preventDefault();
+
+        const formElement = event.target;
+        
+        // 폼 데이터를 서버에 전송할 형태로 준비
+        const formData = new FormData(formElement);
+
+        // 🎯 수정: FormData에서 cidx와 텍스트를 추출
+        const cidx = formData.get('cidx');
+        const newCommentText = formData.get('commentmodify'); 
+        
+     // 1단계 디버깅: cidx 값이 정확한지 확인
+        console.log('--- cidx 값 디버깅 ---');
+        console.log('추출된 cidx 값:', cidx);
+        console.log('DOM에서 찾을 ID:', `ment-${cidx}`);
+        
+     // 2단계 디버깅: DOM 요소 찾기 시도
+        const commentDisplayArea = document.getElementById(`ment-${cidx}`);
+        console.log('갱신 대상 요소:', commentDisplayArea); // 다시 한번 확인
+        
+        if (!commentDisplayArea) {
+            console.error(`ID 'ment-${cidx}'를 가진 요소를 찾을 수 없습니다!`);
+            alert("화면 갱신에 실패했습니다. (ID 오류)");
+            // 여기에서 cancelEdit을 호출하여 수정 폼은 숨깁니다.
+            cancelEdit(cidx);
+            return; 
+       }
+        
+        // ... (Fetch 통신 코드 생략)
+        fetch(formElement.action, {
+            method: 'POST', 
+            // FormData를 URLSearchParams로 변환하여 Content-Type 설정
+            body: new URLSearchParams(formData), 
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('네트워크 응답 오류');
+            }
+            return response.json(); 
+        })
+        .then(data => {
+            // 3. 서버 응답 처리
+            if (data.success) { 
+                
+                // 4. 화면 업데이트 (DOM 조작)
+                const commentDisplayArea = document.getElementById(`ment-${cidx}`);
+
+                // 2단계 디버깅: 갱신 대상 요소 확인
+                console.log('갱신 대상 요소:', commentDisplayArea); // null이면 ID 오류
+
+                if (commentDisplayArea) {
+                    // 댓글 내용을 새 텍스트로 교체
+                    // HTML에 <br> 태그로 줄바꿈을 적용하기 위해 innerHTML 사용
+                    // newCommentText는 <textarea>의 값이며, \r\n 또는 \n을 가짐.
+                    const formattedText = newCommentText.replace(/\r?\n/g, '<br>');
+                    
+                    // 3단계 디버깅: 최종 삽입될 HTML 확인
+                    console.log('최종 삽입 HTML:', formattedText);
+
+                    commentDisplayArea.innerHTML = formattedText;
+                }
+                
+                // 5. 수정 폼 숨기기 및 원래 댓글 행 다시 표시
+                cancelEdit(cidx); 
+                
+                alert('댓글이 성공적으로 수정되었습니다.');
+                
+            } else {
+                alert('댓글 수정 실패: ' + (data.message || '알 수 없는 오류'));
+            }
+        })
+        .catch(error => {
+            console.error('Fetch 에러:', error);
+            alert('댓글 수정 중 통신 문제가 발생했습니다.');
+        });
+    });
+});
+
+
+//댓글 토글
+function toggleEditRow(cidx) {
+    var originalRow = document.getElementById("row-" + cidx);
+    var editRow = document.getElementById("edit-row-" + cidx);
+
+    if (originalRow.style.display !== 'none') {
+        originalRow.style.display = 'none';
+        editRow.style.display = 'table-row'; //
+    } else {
+        originalRow.style.display = 'table-row';
+        editRow.style.display = 'none';
+    }
+}
+
+//댓글 취소 버튼
+function cancelEdit(cidx) {
+    var originalRow = document.getElementById("row-" + cidx);
+    var editRow = document.getElementById("edit-row-" + cidx);
+
+    originalRow.style.display = 'table-row';
+    editRow.style.display = 'none';
+}
+//글 목록 버튼
+function list_back() {
+	var boardtype = "<%= boardtype %>";
+	
+	if (boardtype == "0") {
+		window.location.href = 'list_notice.jsp';
+	}else if (boardtype == "1") {
+		window.location.href = 'list_member.jsp';
+	}else {
+		window.location.href = 'list_anonymity.jsp';
+	}
+}
+//글 수정 버튼
+function modify() {
+	var idx = "<%= idx %>";
+	var boardtype = "<%= boardtype %>";
+	var login_rank = "<%= temp_rank %>";
+	
+	if (boardtype == "0") {
+		if (login_rank == 9) {
+			window.location.href = 'modify.jsp?idx=' + idx;
+		}else {
+			alert("권한 없음")
+			return;
+		}
+		
+	}else if (boardtype == "1") {
+		if (login_rank == 9) {
+			window.location.href = 'modify.jsp?idx=' + idx;
+		}else if (0 <= login_rank && login_rank < 9) {
+			let passinput = prompt('비밀번호를 입력하세요');
+					if (passinput === null) {
+						return;
+					} else if (passinput === "") {
+						alert("아무것도 입력하지 않았습니다.");
+						return;
+					} else {
+						window.location.href = 'modify_check.jsp?idx=' + idx + "&passinput=" + passinput;
+						return;
+					}
+
+		}else {
+			alert("권한 없음")
+			return;
+		}
+		
+	}else {
+		if (login_rank == 9) {
+			window.location.href = 'modify.jsp?idx=' + idx;
+		}else {
+			let passinput = prompt('비밀번호를 입력하세요');
+			if (passinput === null) {
+				return;
+			} else if (passinput === "") {
+				alert("아무것도 입력하지 않았습니다.");
+				return;
+			} else {
+				window.location.href = 'modify_check.jsp?idx=' + idx + "&passinput=" + passinput + "&type=anony";
+				return;
+			}
+		}
+	}
+}
+//글 삭제 버튼
+function wdelete() {
+	var idx = "<%= idx %>";
+	var boardtype = "<%= boardtype %>";
+	var login_rank = "<%= temp_rank %>";
+	
+	if (boardtype == "0") {
+		if (login_rank == 9) {
+			var con_del_check = confirm("게시글을 삭제하시겠습니까?");
+			if (con_del_check) {
+				location.replace("../board_proc/delete_proc.jsp?idx=<%= idx %>");
+			}
+			
+		}else {
+			alert("권한 없음")
+			return;
+		}
+		
+	}else if (boardtype == "1") {
+		if (login_rank == 9) {
+			var con_del_check = confirm("게시글을 삭제하시겠습니까?");
+			if (con_del_check) {
+				location.replace("../board_proc/delete_proc.jsp?idx=<%= idx %>");
+			}
+			
+		}else if (0 <= login_rank && login_rank < 9) {
+			let passinput = prompt('삭제하려면 비밀번호를 입력하세요.');
+					if (passinput === null) {
+						return;
+					} else if (passinput === "") {
+						alert("아무것도 입력하지 않았습니다.");
+						return;
+					} else {
+						location.replace("../board_proc/delete_check.jsp?idx=<%= idx %>&passinput="+passinput);
+						return;
+					}
+
+		}else {
+			alert("권한 없음")
+			return;
+		}
+		
+	}else {
+		if (login_rank == 9) {
+			var con_del_check = confirm("게시글을 삭제하시겠습니까?");
+			if (con_del_check) {
+				location.replace("../board_proc/delete_proc.jsp?idx=<%= idx %>");
+			}
+			
+		}else {
+			let passinput = prompt('삭제하려면 비밀번호를 입력하세요.');
+			if (passinput === null) {
+				return;
+			} else if (passinput === "") {
+				alert("아무것도 입력하지 않았습니다.");
+				return;
+			} else {
+				location.replace("../board_proc/delete_check.jsp?idx=<%= idx %>&passinput="+passinput+"&type=anony");
+				return;
+			}
+		}
+	}
+}
+</script>
+
+</body>
+</html>
