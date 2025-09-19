@@ -1,0 +1,125 @@
+<%@page import="java.util.Enumeration"%>
+<%@page import="com.oreilly.servlet.multipart.DefaultFileRenamePolicy"%>
+<%@page import="com.oreilly.servlet.MultipartRequest"%>
+<%@page import="java.io.File"%>
+<%@ page import="java.util.Date" %>
+<%@ page import="java.text.SimpleDateFormat" %>
+<%@ page import="java.io.IOException"%>
+<%@ page import="java.nio.file.*"%>
+<%@ page language="java" contentType="application/json; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*" %>
+<%@ page import="lib.DB" %>
+<%@ page trimDirectiveWhitespaces="true" %>
+<%
+response.setContentType("application/json"); // 응답 형식 JSON으로 설정
+response.setHeader("Cache-Control", "no-cache"); // 캐시 방지
+out.clear(); // 기존 버퍼 내용 지워 불필요한 공백 제거
+request.setCharacterEncoding("utf-8");
+
+String jsonResponse = "";
+String login_id = "";
+login_id = (String)session.getAttribute("ss_check");
+String ip = java.net.Inet4Address.getLocalHost().getHostAddress();
+
+	Date today = new Date(); // 현재 날짜와 시간 객체 생성
+	SimpleDateFormat yearFormat = new SimpleDateFormat("yyyyMMdd"); // 년도 형식 지정
+	String ymd = yearFormat.format(today); // 년도만 추출
+	int intymd = Integer.parseInt(ymd);
+	
+	SimpleDateFormat filetimeFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+	String filetime = filetimeFormat.format(today);
+
+
+String bidx = request.getParameter("bidx");
+String commenttext = request.getParameter("commenttext");
+
+if (login_id == null || bidx == null || commenttext == null || commenttext.trim().isEmpty()) {
+    // 필수 정보 누락 시 실패 응답
+    jsonResponse = "{\"success\": false, \"message\": \"로그인 또는 필수 입력값이 누락되었습니다.\"}";
+} else {
+
+String sql = "";
+Connection conn=null;
+Statement st = null;
+ResultSet rs = null;
+PreparedStatement ps = null;
+
+	try {
+		conn = DB.getConnection();
+		
+		sql = "insert into comment(bidx,uid,ment,regdate) " +
+				   " values(?,?,?,now())";
+		
+		ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+		
+	
+		ps.setString(1, bidx);
+		ps.setString(2, login_id);
+		ps.setString(3, commenttext);
+		
+		int rows = ps.executeUpdate();
+		
+		if (rows > 0) {
+            // 작성한 댓글의 cidx 가져오기
+            String cidx = "";
+            rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                cidx = rs.getString(1); // 첫 번째 컬럼(idx)의 값을 가져옴
+            }
+            
+            String selectSql = "SELECT c.regdate, m.name as comname from comment c "
+                             + "LEFT JOIN member m ON c.uid = m.uid "
+                             + "WHERE c.idx = ?";
+            
+            ps.close(); // 이전 ps 닫기
+            rs.close(); // 이전 rs 닫기
+            
+            ps = conn.prepareStatement(selectSql);
+            ps.setString(1, cidx);
+            rs = ps.executeQuery();
+            
+            String comname = "";
+            String comdate = "";
+            
+            if(rs.next()){
+                 comdate = rs.getString("regdate");
+                 comname = rs.getString("comname");
+            }
+
+            String safe_commenttext = commenttext.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "");
+            String safe_comname = comname.replace("\\", "\\\\").replace("\"", "\\\"");
+
+            jsonResponse = String.format(
+                "{\"success\": true, \"cidx\": \"%s\", \"comname\": \"%s\", \"ment\": \"%s\", \"comdate\": \"%s\", \"cuid\": \"%s\"}",
+                cidx, 
+                safe_comname,
+                safe_commenttext,
+                comdate,
+                login_id
+            );
+        } else {
+            jsonResponse = "{\"success\": false, \"message\": \"댓글 저장에 실패했습니다.\"}";
+        }
+		 
+		 
+	}catch(Exception e){ 
+		System.err.println("댓글 작성 오류: " + e.getMessage());
+        jsonResponse = "{\"success\": false, \"message\": \"데이터베이스 처리 중 오류가 발생했습니다.\"}";
+	}finally {
+	  	if (ps != null){
+			   ps.close();
+			}
+	  	if(rs != null){
+			   rs.close();
+			}
+		if (st != null){
+			   st.close();
+			}
+		if (conn != null){
+			   conn.close();
+			}
+	}
+}
+out.print(jsonResponse);
+out.flush();
+%>

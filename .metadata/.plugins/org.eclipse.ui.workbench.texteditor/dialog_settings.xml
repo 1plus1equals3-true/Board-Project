@@ -1,22 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <section name="Workbench">
 	<item key="hasShownOverlayPopupBefore" value="true"/>
-	<item key="replaceBarOpen" value="false"/>
+	<item key="replaceBarOpen" value="true"/>
 	<list key="searchhistory">
-		<item value="document.getElementById"/>
-		<item value="ment-${cidx}"/>
-		<item value="commentDisplayArea"/>
-		<item value="const newCommentText = formElement.querySelector(&apos;textarea[name=&quot;commentmodify&quot;]&apos;).value;"/>
-		<item value="temp_rank"/>
-		<item value="pass"/>
-		<item value="delpass"/>
-		<item value="idx"/>
+		<item value="console.log"/>
+		<item value="consol"/>
+		<item value="console"/>
+		<item value="con"/>
+		<item value="}"/>
+		<item value="${"/>
+		<item value="createCommentRow"/>
+		<item value="data"/>
+		<item value="commentData"/>
+		<item value="`"/>
+		<item value="&quot;"/>
 		<item value="login_rank"/>
+		<item value="temp_rank"/>
 		<item value="login_id"/>
-		<item value="login"/>
-		<item value="login_idx"/>
-		<item value="boardtype"/>
-		<item value="cidx"/>
-		<item value="pageCount"/>
+		<item value="document.getElementById"/>
+	</list>
+	<list key="replacehistory">
+		<item value="`"/>
+		<item value="`+"/>
+		<item value="+`"/>
+		<item value="&quot;"/>
+		<item value="&apos;"/>
 	</list>
 </section>

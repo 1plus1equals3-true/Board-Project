@@ -17,5 +17,5 @@ session.removeAttribute("ss_check");
 %>
 <script>
 alert("로그아웃");
-location.replace("Login.jsp");
+location.replace("../board_proc/main_proc.jsp");
 </script>

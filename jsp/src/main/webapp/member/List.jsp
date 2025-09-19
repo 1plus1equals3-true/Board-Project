@@ -181,7 +181,7 @@ color: blue;
 
 <table border="1">
    <tr>
-      <td>기본키</td>
+      <td>회원번호</td>
       <td>아이디</td>
       <td>비밀번호</td>
       <td>이름</td>

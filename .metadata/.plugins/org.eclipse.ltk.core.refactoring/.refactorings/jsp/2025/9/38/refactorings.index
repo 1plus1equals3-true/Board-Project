@@ -21,3 +21,8 @@
 1758174816559	Copy file
 1758174830904	Move 'bak_comment_modify.jsp' to 'test'
 1758180572201	Move 'comment_modify.jsp' to 'board_proc'
+1758255175317	Move 'comment_proc.jsp' to 'board_proc'
+1758265533160	Move 'comment_del.jsp' to 'board_proc'
+1758265545510	Rename resource 'comment_del.jsp'
+1758265694951	Rename resource 'deletecheck_com.jsp'
+1758265700983	Move 'bak_deletecheck_com.jsp' to 'test'

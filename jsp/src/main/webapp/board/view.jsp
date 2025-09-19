@@ -227,7 +227,7 @@ object-fit: contain;
 </style>
 </head>
 <body>
-
+<%@ include file="op_top.jsp" %>
 <%
 String idx = request.getParameter("idx");
 
@@ -296,7 +296,7 @@ try {
 	
 
 %>
-<%@ include file="op_top.jsp" %>
+
 <% temp_rank = login_rank; %>
 <section class="min-height">
 <h1>작성 글</h1><br>
@@ -373,7 +373,7 @@ try {
 	<% if (cuid != null && cuid.equals(login_id)) { %>
 	    <td>
 	        <button class="modify-button" onclick="toggleEditRow('<%= cidx %>')">수정</button>
-	        <a href="deletecheck_com.jsp?idx=<%= cidx %>" class="delete-button">삭제</a>
+	        <button class="delete-button" data-cidx="<%= cidx %>">삭제</button>
 	    </td>
     <% }else { %>
     	<td></td>
@@ -400,7 +400,7 @@ try {
 <tr>
 	<td></td>
 	<td colspan="3">
-		<form action="comment_proc.jsp" method="post" class="comment-form">
+		<form id="comment-write-form" action="../board_proc/comment_proc.jsp" method="post" class="comment-form">
 			<input type="hidden" name="bidx" value="<%= idx %>">
 			<textarea name="commenttext"></textarea>
 			<button type="submit">등록</button>
@@ -419,19 +419,24 @@ try {
 
 <br>
 <div class="button-group">
-<% if (boardtype.equals("0") && login_rank == 9) { %>
-	<button type="button" class="btn-modify" onclick="modify()">수정</button>
-	<button type="button" class="btn-delete" onclick="wdelete()">삭제</button>
-<% }else if (boardtype.equals("1")) {
+<% if (boardtype.equals("0")) { 
+		if (login_rank == 9) {
+			%>
+			<button type="button" class="btn-modify" onclick="modify()">수정</button>
+			<button type="button" class="btn-delete" onclick="wdelete()">삭제</button>
+			<%
+		}
+
+}else if (boardtype.equals("1")) {
 	if (login_rank >= 0) {
 		%>
 		<button type="button" class="btn-modify" onclick="modify()">수정</button>
 		<button type="button" class="btn-delete" onclick="wdelete()">삭제</button>
 		<%
 	}
-%>
 
-<% }else { %>
+}else { 
+	%>
 	<button type="button" class="btn-modify" onclick="modify()">수정</button>
 	<button type="button" class="btn-delete" onclick="wdelete()">삭제</button>
 <% } %>
@@ -461,9 +466,124 @@ if (conn != null){
 
 <script>
 
+//댓글 작성 폼 비동기 처리
+document.getElementById('comment-write-form').addEventListener('submit', function(event) {
+    // 폼 기본 제출 동작(페이지 리로드) 방지
+    event.preventDefault(); 
+
+    const formElement = event.target;
+    const commentTextArea = formElement.querySelector('textarea[name="commenttext"]');
+    const newCommentText = commentTextArea.value.trim();
+
+    if (newCommentText === "") {
+        alert("댓글 내용을 입력해주세요.");
+        return;
+    }
+    
+    // 폼 데이터를 URLSearchParams 객체로 변환
+    const formData = new FormData(formElement);
+
+    fetch(formElement.action, {
+        method: 'POST', 
+        body: new URLSearchParams(formData), // x-www-form-urlencoded 형식으로 변환
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('네트워크 응답 오류');
+        }
+        // 서버에서 JSON 응답 받기
+        return response.json(); 
+    })
+    .then(data => {
+        // 서버 응답 처리
+        if (data.success) { 
+            // 새 댓글을 HTML로 생성
+            const newRowHtml = createCommentRow(data); 
+
+            // 테이블에 삽입
+            const commentTable = document.querySelector('.view-table:last-of-type tbody');
+            const commentFormRow = formElement.closest('tr'); // 댓글 폼이 포함된 <tr> 
+            
+            // 새 행을 댓글 폼 행 바로 앞에 삽입
+            commentFormRow.insertAdjacentHTML('beforebegin', newRowHtml);
+            
+            // 입력창 초기화
+            commentTextArea.value = '';
+            
+            // alert('댓글이 성공적으로 등록되었습니다.');
+
+        } else {
+            alert('댓글 등록 실패: ' + (data.message || '알 수 없는 오류'));
+        }
+    })
+    .catch(error => {
+        console.error('Fetch 에러:', error);
+        alert('댓글 등록 중 통신 문제가 발생했습니다.');
+    });
+});
+
+function createCommentRow(commentData) {
+
+    const formattedMent = commentData.ment.replace(/\r?\n/g, '<br>');
+    const bidx = document.querySelector('input[name="bidx"]').value; // 게시글 idx
+    const login_id = "<%= login_id %>";
+
+    let actionButtons = '';
+    // 작성자 ID와 로그인 ID가 같을 경우에만 수정/삭제 버튼 추가
+    if (commentData.cuid && commentData.cuid === login_id) {
+        actionButtons = `
+            <td>
+                <button class="modify-button" onclick="toggleEditRow(`+commentData.cidx+`)">수정</button>
+                <button class="delete-button" data-cidx="`+commentData.cidx+`">삭제</button>
+            </td>
+        `;
+    } else {
+        actionButtons = '<td></td>';
+    }
+
+
+    // 새 댓글 표시
+    const newCommentRow = `
+        <tr id="row-`+commentData.cidx+`">
+            <td>`+commentData.comname+`</td>
+            <td id="ment-`+commentData.cidx+`" style="text-align: left;">`+formattedMent+`</td>
+            <td>`+commentData.comdate+`</td>
+            `+actionButtons+`
+        </tr>
+    `;
+
+    // 새 댓글 수정 폼 행 (기존 댓글의 ment 값을 사용)
+    const editFormRow = `
+        <tr id="edit-row-`+commentData.cidx+`" style="display:none;">
+            <td>`+commentData.comname+`</td>
+            <td colspan="3">
+                <form id="editForm-`+commentData.cidx+`" action="../board_proc/comment_modify.jsp" method="post" class="edit-form">
+                    <input type="hidden" name="idx" value="`+bidx+`">
+                    <input type="hidden" name="cidx" value="`+commentData.cidx+`">
+                    <textarea name="commentmodify">`+commentData.ment+`</textarea>
+                    <button type="submit" class="btn-submit">수정</button>
+                    <button type="button" class="btn-cancel" onclick="cancelEdit(`+commentData.cidx+`)">취소</button>
+                </form>
+            </td>
+        </tr>
+    `;
+
+    // 두 행을 합쳐서 반환
+    return newCommentRow + editFormRow;
+}
+
 // 댓글 수정폼 데이터 받기
-document.querySelectorAll('.edit-form').forEach(form => {
-    form.addEventListener('submit', function(event) {
+//document.querySelectorAll('.edit-form').forEach(form => {
+//    form.addEventListener('submit', function(event) {
+
+//submit 이벤트 발생 시
+document.addEventListener('submit', function(event) {
+    // 이벤트 타겟'.edit-form' 인지 확인
+    if (event.target && event.target.matches('.edit-form')) {
+    	
         // 폼 submit 비활성화
         event.preventDefault();
 
@@ -487,11 +607,12 @@ document.querySelectorAll('.edit-form').forEach(form => {
             }
             // 서버에서 JSON 응답 받기
             return response.json(); 
+            
         })
         .then(data => {
             // 서버 응답 처리
             if (data.success) { 
-                
+            	
                 // 화면 업데이트
                 const commentDisplayArea = document.getElementById('ment-'+cidx);
                 if (commentDisplayArea) {
@@ -514,7 +635,7 @@ document.querySelectorAll('.edit-form').forEach(form => {
             console.error('Fetch 에러:', error);
             alert('댓글 수정 중 통신 문제가 발생했습니다.');
         });
-    });
+    }
 });
 
 
@@ -540,6 +661,69 @@ function cancelEdit(cidx) {
     originalRow.style.display = 'table-row';
     editRow.style.display = 'none';
 }
+
+//댓글 삭제 버튼 비동기 처리
+document.addEventListener('click', function(event) {
+    // 이벤트 타겟이 'delete-button' 클래스를 가지는지 확인
+    if (event.target && event.target.matches('.delete-button')) {
+        const deleteButton = event.target;
+        const cidx = deleteButton.getAttribute('data-cidx'); // data-cidx 값 가져오기
+
+        if (!cidx) {
+            console.error('댓글 ID(cidx)를 찾을 수 없습니다.');
+            return;
+        }
+
+        // 삭제 확인
+        if (!confirm('정말로 이 댓글을 삭제하시겠습니까?')) {
+            return;
+        }
+        
+        const deleteUrl = '../board_proc/comment_delete_proc.jsp'; 
+
+        // 비동기 요청 시작
+        fetch(deleteUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            // 삭제할 댓글 ID를 서버에 전달
+            body: 'cidx=' + encodeURIComponent(cidx)
+        })
+        .then(response => {
+            if (!response.ok) {
+                // HTTP 상태 코드가 200-299 범위가 아닌 경우
+                throw new Error('네트워크 응답 오류: ' + response.status);
+            }
+            // 서버에서 JSON 응답 받기 (성공/실패 메시지)
+            return response.json(); 
+        })
+        .then(data => {
+            if (data.success) {
+                // 삭제 성공 시 UI에서 댓글 행 제거
+                const commentRow = document.getElementById('row-' + cidx);
+                const editRow = document.getElementById('edit-row-' + cidx);
+
+                if (commentRow) {
+                    commentRow.remove();
+                }
+                if (editRow) {
+                    editRow.remove();
+                }
+                
+                //alert('댓글이 성공적으로 삭제되었습니다.');
+            } else {
+                // 서버에서 'success: false'를 보낸 경우
+                alert('댓글 삭제 실패: ' + (data.message || '권한이 없거나 알 수 없는 오류입니다.'));
+            }
+        })
+        .catch(error => {
+            console.error('Fetch 에러:', error);
+            alert('댓글 삭제 중 통신 문제가 발생했습니다.');
+        });
+    }
+});
+
 //글 목록 버튼
 function list_back() {
 	var boardtype = "<%= boardtype %>";

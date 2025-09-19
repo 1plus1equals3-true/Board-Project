@@ -23,6 +23,9 @@ ResultSet rs = null;
 뷰의 수정버튼
 <a href="modify_check.jsp?idx=<%= idx %>"><button type="button" class="btn-modify">수정</button></a>
 
+뷰의 댓글 삭제 버튼
+<a href="deletecheck_com.jsp?idx=<%= cidx %>" class="delete-button">삭제</a>
+
 모디파이 체크
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
