@@ -133,6 +133,7 @@
 </head>
 <body>
 <%@ include file="op_top.jsp" %>
+<section class="min-height">
 <section>
 	<form name="search_form" method="get" action="../board/list.jsp" class="search-form">
 		<select name="key">
@@ -182,6 +183,7 @@
 			</a>
 		</c:forEach>
 	</div>
+</section>
 </section>
 <%@ include file="op_bot.jsp" %>
 </body>

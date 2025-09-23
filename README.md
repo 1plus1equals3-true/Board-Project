@@ -1,4 +1,5 @@
 board
+
 ```
 CREATE TABLE `board` (
 	`idx` INT NOT NULL AUTO_INCREMENT,
@@ -18,10 +19,13 @@ CREATE TABLE `board` (
 )
 COLLATE='utf8mb4_0900_ai_ci'
 ENGINE=InnoDB
-AUTO_INCREMENT=434
+AUTO_INCREMENT=438
 ;
+
 ```
+
 comment
+
 ```
 CREATE TABLE `comment` (
 	`idx` INT NOT NULL AUTO_INCREMENT,
@@ -33,10 +37,13 @@ CREATE TABLE `comment` (
 )
 COLLATE='utf8mb4_0900_ai_ci'
 ENGINE=InnoDB
-AUTO_INCREMENT=47
+AUTO_INCREMENT=15
 ;
+
 ```
+
 member
+
 ```
 CREATE TABLE `member` (
 	`idx` INT NOT NULL AUTO_INCREMENT,
@@ -52,6 +59,7 @@ CREATE TABLE `member` (
 	`originalfile` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
 	`originaldir` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
 	`member_rank` INT NULL DEFAULT '0',
+	`active` TINYINT(1) NULL DEFAULT '1',
 	PRIMARY KEY (`idx`) USING BTREE,
 	UNIQUE INDEX `uid` (`uid`) USING BTREE
 )
@@ -59,4 +67,40 @@ COLLATE='utf8mb4_0900_ai_ci'
 ENGINE=InnoDB
 AUTO_INCREMENT=194
 ;
+
+```
+
+board_gallery
+
+```
+CREATE TABLE `board_gallery` (
+	`idx` INT NOT NULL AUTO_INCREMENT,
+	`bidx` INT NOT NULL,
+	`upfile_0` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`originalfile_0` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`upfile_1` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`originalfile_1` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`upfile_2` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`originalfile_2` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`upfile_3` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`originalfile_3` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`upfile_4` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`originalfile_4` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`upfile_5` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`originalfile_5` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`upfile_6` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`originalfile_6` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`upfile_7` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`originalfile_7` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`upfile_8` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`originalfile_8` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`upfile_9` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`originalfile_9` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	PRIMARY KEY (`idx`) USING BTREE
+)
+COLLATE='utf8mb4_0900_ai_ci'
+ENGINE=InnoDB
+AUTO_INCREMENT=2
+;
+
 ```

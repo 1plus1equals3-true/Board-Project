@@ -8,12 +8,27 @@
     <title>JSTL 예시 (View)</title>
 </head>
 <body>
-    <h1>JSTL로 코드와 화면 분리하기</h1>
-    <ul>
-        <%-- JSTL을 이용한 화면 출력 --%>
-        <c:forEach var="item" items="${itemList}">
-            <li>${item}</li>
-        </c:forEach>
-    </ul>
+<div id="file-container">
+  <input type="file" id="upfile">
+</div>
+<button type="button" onclick="clearFile()">파일 취소</button>
+
+<script>
+function clearFile() {
+  const fileInput = document.getElementById('upfile');
+  const parent = fileInput.parentNode;
+  
+  // 현재 input 요소 제거
+  parent.removeChild(fileInput);
+  
+  // 새로운 input 요소 생성
+  const newInput = document.createElement('input');
+  newInput.type = 'file';
+  newInput.id = 'upfile';
+
+  // 새 요소를 부모에 추가
+  parent.appendChild(newInput);
+}
+</script>
 </body>
 </html>

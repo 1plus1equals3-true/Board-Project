@@ -23,7 +23,7 @@ String ip = java.net.Inet4Address.getLocalHost().getHostAddress();
 	String ymd = yearFormat.format(today); // 년도만 추출
 	int intymd = Integer.parseInt(ymd);
 	
-	SimpleDateFormat filetimeFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+	SimpleDateFormat filetimeFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS");
 	String filetime = filetimeFormat.format(today);
 
 	//실제로 서버에 저장되는 path

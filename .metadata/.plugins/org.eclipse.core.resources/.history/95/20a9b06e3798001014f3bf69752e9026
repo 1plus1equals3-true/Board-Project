@@ -1,0 +1,104 @@
+<%@page import="java.util.Enumeration"%>
+<%@page import="com.oreilly.servlet.multipart.DefaultFileRenamePolicy"%>
+<%@page import="com.oreilly.servlet.MultipartRequest"%>
+<%@page import="java.io.File"%>
+<%@ page import="java.util.Date" %>
+<%@ page import="java.text.SimpleDateFormat" %>
+<%@ page import="java.io.IOException"%>
+<%@ page import="java.nio.file.*"%>
+
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*" %>
+<%@ page import="lib.DB" %>
+<%
+String login_id = "";
+login_id = (String)session.getAttribute("ss_check");
+String ip = java.net.Inet4Address.getLocalHost().getHostAddress();
+String path = "D:\\data";
+String dir = path + "\\board";
+	
+	int size = 1024 * 1024 * 10; // 파일 사이즈 설정 : 10M
+	String fileName = null;    // 업로드한 파일 이름
+	String originalFileName = "";    //  서버에 중복된 파일 이름이 존재할 경우 처리하기 위해
+
+	// cos.jar라이브러리 클래스를 가지고 실제 파일을 업로드하는 과정
+	MultipartRequest multi = null;
+	
+	try{
+	    // DefaultFileRenamePolicy 처리는 중복된 이름이 존재할 경우 처리할 때
+	    // request, 파일저장경로, 용량, 인코딩타입, 중복파일명에 대한 정책
+	    multi = new MultipartRequest(request, dir, size, "utf-8", new DefaultFileRenamePolicy());
+	    
+	    //String uid = multi.getParameter("uid");
+	    //System.out.println(uid);
+	    
+	    // 전송한 전체 파일이름들을 가져온다.
+	    Enumeration files = multi.getFileNames();
+	    String str = (String)files.nextElement();
+	    //System.out.println(str);
+	    
+	    
+	    //파일명 중복이 발생했을 때 정책에 의해 뒤에 1,2,3 처럼 숫자가 붙어 고유 파일명을 생성한다.
+	    // 이때 생성된 이름을 FilesystemName이라고 하여 그 이름 정보를 가져온다. (중복 처리)
+	    fileName = multi.getFilesystemName(str);
+	    //실제 파일 이름을 가져온다.
+	    //out.print(fileName);
+	    //System.out.println(fileName);
+	    
+	    originalFileName = multi.getOriginalFileName(str);
+	    //out.print(originalFileName);
+	    //System.out.println(originalFileName);
+     
+    
+	}catch(Exception e){
+   		e.printStackTrace();
+	}
+	
+	//확장자 찾기
+		int index = 0;
+		if (fileName != null) {
+			index = fileName.lastIndexOf(".");
+		}
+		String extension ="";
+		if (index > 0) {
+			extension = fileName.substring(index);
+			//System.out.println(extension); //확장자 시스템 출력
+		}
+		
+	//업로드된 파일명 변경하기
+			String filetimeex = filetime + extension;
+			Path src = Paths.get(dir +"\\"+ fileName);
+		    Path dest = Paths.get(dir +"\\"+ filetimeex);
+			
+		    try {
+			    Path newFilePath = Files.move(src, dest);
+
+			    //System.out.println(newFilePath);
+
+			} catch (IOException e) {
+			    e.printStackTrace();
+			}
+		    
+		    if (fileName == null) {
+		    	filetimeex = null;
+		    	dir = null;
+		    }
+
+String writename = multi.getParameter("writename");
+String writepwd = multi.getParameter("writepwd");
+String writetitle = multi.getParameter("writetitle");
+String writetext = multi.getParameter("writetext");
+String Noticemode = multi.getParameter("Noticemode");
+
+if ("on".equals(Noticemode)) { // NullPointerException 방지
+    Noticemode = "0";
+} else if (Noticemode == null && login_id != null) {
+    // 체크되지 않았고 로그인 상태인 경우
+    Noticemode = "1";
+} else {
+    // 그 외의 경우 (체크되지 않았고 로그인되지 않은 상태)
+    login_id = "";
+    Noticemode = "2";
+}
+%>

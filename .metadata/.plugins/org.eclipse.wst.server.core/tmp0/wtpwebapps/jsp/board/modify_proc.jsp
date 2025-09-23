@@ -13,7 +13,6 @@
 <%@ page import="lib.DB" %>
 
 <%@ include file="op_top.jsp" %>
-<%@ include file="op_logincheck.jsp" %>
 
 <%
 request.setCharacterEncoding("utf-8");
@@ -198,7 +197,7 @@ try{
 	 
 	 	%>
 		<script>
-			alert("수정 성공");
+			//alert("수정 성공");
 			location.replace("view.jsp?idx=<%= idx %>");
 		</script>
 		<%

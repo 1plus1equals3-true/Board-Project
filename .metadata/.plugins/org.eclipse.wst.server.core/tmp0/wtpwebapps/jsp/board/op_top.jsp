@@ -42,7 +42,7 @@ if(login_id == null || login_id.equals("") || login_id.equals("null")) {
 
 <style>
 .min-height {
-	min-height: 760px;
+	min-height: 80vh;
 }
 *{
 	margin: 0 auto;

@@ -3,6 +3,8 @@
 	<item key="hasShownOverlayPopupBefore" value="true"/>
 	<item key="replaceBarOpen" value="true"/>
 	<list key="searchhistory">
+		<item value="filetimeex"/>
+		<item value="fileIndex"/>
 		<item value="console.log"/>
 		<item value="consol"/>
 		<item value="console"/>
@@ -16,8 +18,6 @@
 		<item value="&quot;"/>
 		<item value="login_rank"/>
 		<item value="temp_rank"/>
-		<item value="login_id"/>
-		<item value="document.getElementById"/>
 	</list>
 	<list key="replacehistory">
 		<item value="`"/>

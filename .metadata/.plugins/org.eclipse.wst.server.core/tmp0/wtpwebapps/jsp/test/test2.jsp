@@ -1,19 +1,56 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="java.util.ArrayList"%>
-<%@ page import="java.util.List"%>
+<%@page import="java.util.Enumeration"%>
+<%@page import="com.oreilly.servlet.multipart.DefaultFileRenamePolicy"%>
+<%@page import="com.oreilly.servlet.MultipartRequest"%>
+<%@page import="java.io.File"%>
+<%@ page import="java.util.Date" %>
+<%@ page import="java.text.SimpleDateFormat" %>
+<%@ page import="java.io.IOException"%>
+<%@ page import="java.nio.file.*"%>
 
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*" %>
+<%@ page import="lib.DB" %>
+<%@ page import="lib.MyFileRenamePolicy" %>
 <%
-    // 1. 비즈니스 로직: 데이터 생성
-    List<String> items = new ArrayList<>();
-    items.add("이것은");
-    items.add("JSP를 사용한");
-    items.add("컨트롤러 역할의");
-    items.add("파일입니다.");
+String login_id = "";
+login_id = (String)session.getAttribute("ss_check");
+String ip = java.net.Inet4Address.getLocalHost().getHostAddress();
+String path = "D:\\data";
+String dir = path + "\\boarda";
+	
+	int size = 1024 * 1024 * 10; // 파일 사이즈 설정 : 10M
+	String fileName = null;
+	String originalFileName = "";
 
-    // 2. request 객체에 데이터 저장
-    request.setAttribute("itemList", items);
+	MultipartRequest multi = null;
+	
+	try{
+	    multi = new MultipartRequest(request, dir, size, "utf-8", new MyFileRenamePolicy());
+	    
+	    Enumeration files = multi.getFileNames();
+	    
+	    out.println("<h3>업로드된 파일 목록</h3>");
 
-    // 3. 뷰(View) 역할을 하는 JSP로 포워딩
-    RequestDispatcher dispatcher = request.getRequestDispatcher("test3.jsp");
-    dispatcher.forward(request, response);
+	    // while 반복문을 사용하여 모든 파일 정보를 가져옴
+	    while (files.hasMoreElements()) {
+	        String name = (String)files.nextElement();
+	        
+	        // 서버에 저장된 이름
+	        fileName = multi.getFilesystemName(name);
+	        
+	        // 사용자가 업로드한 원래 파일 이름
+	        originalFileName = multi.getOriginalFileName(name);
+	        
+	        if (fileName != null) {
+	            out.println("<p><b>폼 필드 이름:</b> " + name + "</p>");
+	            out.println("<p><b>사용자 파일명:</b> " + originalFileName + "</p>");
+	            out.println("<p><b>서버에 저장된 파일명:</b> " + fileName + "</p>");
+	            out.println("<hr>");
+	        }
+	    }
+     
+	}catch(Exception e){
+   		e.printStackTrace();
+	}
 %>
