@@ -274,6 +274,11 @@ if(rs != null){
 	String originalfile = rs.getString("originalfile");
 	boardtype = rs.getString("boardtype");
 	
+	if (boardtype.equals("3")) {
+		response.sendRedirect("../board/view_gallery.jsp?idx="+idx);
+		return;
+	}
+	
 	int ihit = Integer.parseInt(hit);
 	ihit+=1;
 	hit = Integer.toString(ihit);
@@ -292,7 +297,7 @@ try {
 	  out.println(sql);
 }
 
-	
+
 	
 
 %>

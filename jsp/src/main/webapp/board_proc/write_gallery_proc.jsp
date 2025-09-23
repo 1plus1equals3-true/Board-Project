@@ -165,7 +165,7 @@ try {
 	
 
 		%> <script type="text/javascript">
-			location.replace("../board/list_gallery.jsp");
+			location.replace("../board/view.jsp?idx=<%=bidx%>");
 		</script> <%
 	 
 }catch(Exception e){ 

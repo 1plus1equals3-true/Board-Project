@@ -1,0 +1,188 @@
+<%@page import="java.util.Enumeration"%>
+<%@page import="com.oreilly.servlet.multipart.DefaultFileRenamePolicy"%>
+<%@page import="com.oreilly.servlet.MultipartRequest"%>
+<%@page import="java.io.File"%>
+<%@ page import="java.util.Date" %>
+<%@ page import="java.text.SimpleDateFormat" %>
+<%@ page import="java.io.IOException"%>
+<%@ page import="java.nio.file.*"%>
+
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*" %>
+<%@ page import="lib.DB" %>
+<%@ page import="lib.MyFileRenamePolicy" %>
+    
+<%
+String login_id = "";
+login_id = (String)session.getAttribute("ss_check");
+String ip = java.net.Inet4Address.getLocalHost().getHostAddress();
+String fileNames[] = new String[10];
+String originalFileNames[] = new String[10];
+
+	Date today = new Date(); // 현재 날짜와 시간 객체 생성
+	SimpleDateFormat yearFormat = new SimpleDateFormat("yyyyMMdd"); // 년도 형식 지정
+	String ymd = yearFormat.format(today);
+	int intymd = Integer.parseInt(ymd);
+	
+	SimpleDateFormat filetimeFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS");
+	String filetime = filetimeFormat.format(today);
+
+	// 고정 경로
+	String path = "D:\\data";
+	// 전체 경로
+	String dir = path + "\\board" + ymd;
+	//디렉토리 생성
+	Path directoryPath = Paths.get(dir);
+	try {
+	    Files.createDirectory(directoryPath);
+	
+	    System.out.println(directoryPath + " 디렉토리가 생성되었습니다.");
+	    
+	} catch (FileAlreadyExistsException e) {
+	    //System.out.println("디렉토리가 이미 존재합니다");
+	} catch (NoSuchFileException e) {
+	    System.out.println("디렉토리 경로가 존재하지 않습니다");
+	}catch (IOException e) {
+	    e.printStackTrace();
+	}
+	
+	int size = 1024 * 1024 * 10; // 파일 사이즈 설정 : 10M
+	String fileName = null;    // 업로드한 파일 이름
+	String originalFileName = "";    //  서버에 중복된 파일 이름이 존재할 경우 처리하기 위해
+
+	// cos.jar라이브러리 클래스를 가지고 실제 파일을 업로드하는 과정
+	MultipartRequest multi = null;
+	
+	try{
+	    // request, 파일저장경로, 용량, 인코딩타입, 중복파일명에 대한 정책
+	    multi = new MultipartRequest(request, dir, size, "utf-8", new MyFileRenamePolicy());
+	    
+	    // 전송한 전체 파일이름들을 가져온다.
+	    Enumeration files = multi.getFileNames();
+	    
+	    int i = 0; // 파일 저장 번호
+	 	// while 반복문을 사용하여 모든 파일 정보를 가져옴
+	    while (files.hasMoreElements()) {
+	    	
+	        String name = (String)files.nextElement();
+	        
+	        // 서버에 저장된 이름
+	        fileName = multi.getFilesystemName(name);
+	        
+	        // 사용자가 업로드한 원래 파일 이름
+	        originalFileName = multi.getOriginalFileName(name);
+	        
+	        if (fileName != null) {
+	        	originalFileNames[i] = originalFileName;
+	            fileNames[i] = fileName;
+	            i++;
+	        }
+	    }
+     
+    
+	}catch(Exception e){
+   		e.printStackTrace();
+	}
+
+    if (fileName == null) {
+    	dir = null;
+    }
+
+String writename = multi.getParameter("writename");
+String writepwd = multi.getParameter("writepwd");
+String writetitle = multi.getParameter("writetitle");
+String writetext = multi.getParameter("writetext");
+
+String sql = "";
+Connection conn=null;
+Statement st = null;
+ResultSet rs = null;
+PreparedStatement ps = null;
+
+try {
+	conn = DB.getConnection();
+
+		sql = "SELECT name FROM member WHERE uid='"+login_id+"'";
+		st = conn.createStatement();
+		rs = st.executeQuery(sql);
+		rs.next();
+		String memname = rs.getString("name");
+		rs.close();
+		st.close();
+		
+		sql = "insert into board(title,content,regdate,ip,uid,relativedir,name,boardtype) " +
+				   " values(?,?,now(),?,?,?,?,?)";
+		
+		ps = conn.prepareStatement(sql);
+
+		ps.setString(1, writetitle);
+		ps.setString(2, writetext);
+		ps.setString(3, ip);
+		ps.setString(4, login_id);
+		ps.setString(5, dir);
+		ps.setString(6, memname);
+		ps.setString(7, "3");
+	
+		ps.executeUpdate();
+		
+		st = conn.createStatement();
+		rs = st.executeQuery("SELECT LAST_INSERT_ID()");
+		rs.next();
+		String bidx = rs.getString(1);
+	
+		ps.close();
+		
+		sql = "insert into board_gallery(bidx,upfile_0,upfile_1,upfile_2,upfile_3,upfile_4,upfile_5,upfile_6,upfile_7,upfile_8,upfile_9,originalfile_0,originalfile_1,originalfile_2,originalfile_3,originalfile_4,originalfile_5,originalfile_6,originalfile_7,originalfile_8,originalfile_9) " +
+			   " values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+	
+		ps = conn.prepareStatement(sql);
+		
+		ps.setString(1, bidx);
+		ps.setString(2, fileNames[0]);
+		ps.setString(3, fileNames[1]);
+		ps.setString(4, fileNames[2]);
+		ps.setString(5, fileNames[3]);
+		ps.setString(6, fileNames[4]);
+		ps.setString(7, fileNames[5]);
+		ps.setString(8, fileNames[6]);
+		ps.setString(9, fileNames[7]);
+		ps.setString(10, fileNames[8]);
+		ps.setString(11, fileNames[9]);
+		ps.setString(12, originalFileNames[0]);
+		ps.setString(13, originalFileNames[1]);
+		ps.setString(14, originalFileNames[2]);
+		ps.setString(15, originalFileNames[3]);
+		ps.setString(16, originalFileNames[4]);
+		ps.setString(17, originalFileNames[5]);
+		ps.setString(18, originalFileNames[6]);
+		ps.setString(19, originalFileNames[7]);
+		ps.setString(20, originalFileNames[8]);
+		ps.setString(21, originalFileNames[9]);
+		
+		ps.executeUpdate();
+		
+	
+
+		%> <script type="text/javascript">
+			location.replace("../board/list_gallery.jsp");
+		</script> <%
+	 
+}catch(Exception e){ 
+	  out.println(e.toString());
+	  out.println(sql);
+}finally {
+  	if (ps != null){
+		   ps.close();
+		}
+  	if (rs != null){
+		   rs.close();
+		}
+	if (st != null){
+		   st.close();
+		}
+	if (conn != null){
+		   conn.close();
+		}
+}
+%>

@@ -19,7 +19,7 @@ public class MyFileRenamePolicy implements FileRenamePolicy {
             ext = originalFileName.substring(dot);
         }
 
-        // 새로운 파일명 생성 (예: yyyyMMddHHmmss + UUID + 확장자)
+        // 새로운 파일명 생성
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSSS");
         String newName = sdf.format(new Date()) + "_" + UUID.randomUUID().toString() + ext;
 

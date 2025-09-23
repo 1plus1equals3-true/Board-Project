@@ -4,7 +4,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>쓰기</title>
+<title>갤러리 글쓰기</title>
 <style>
 *{
 	margin: 0 auto;

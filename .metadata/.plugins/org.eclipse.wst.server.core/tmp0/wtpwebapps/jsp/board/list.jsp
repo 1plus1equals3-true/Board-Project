@@ -187,7 +187,9 @@ try {
 
 %>
 <%@ include file="op_top.jsp" %>
+<%@ include file="../include/side_nav.jsp" %>
 <section class="min-height">
+
 <h1>전체 글 보기</h1><br>
 <%
 	if(word != null && !word.equals("")) {

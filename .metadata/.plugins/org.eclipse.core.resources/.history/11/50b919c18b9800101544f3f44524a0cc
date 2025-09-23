@@ -1,0 +1,40 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<style>
+.side-nav {
+  /* sticky 속성으로 스크롤에 따라 위치 고정 */
+  position: sticky;
+  /* 뷰포트 상단에서 20px 떨어진 곳에 고정 */
+  top: 20px; 
+  /* 네비게이션의 너비 */
+  width: 200px;
+  /* 내용물의 높이에 맞게 설정 */
+  height: fit-content;
+  border: 1px solid #ccc;
+  padding: 10px;
+  background-color: #f9f9f9;
+}
+
+.side-nav h6 {
+  margin-top: 0;
+}
+
+.side-nav ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.side-nav li {
+  padding: 5px 0;
+}
+</style>
+
+<div class="side-nav">
+	<h6>게시판</h6>
+	<ul>
+		<li>공지사항</li>
+		<li>회원 게시판</li>
+		<li>익명 게시판</li>
+		<li>갤러리</li>
+	</ul>
+</div>
