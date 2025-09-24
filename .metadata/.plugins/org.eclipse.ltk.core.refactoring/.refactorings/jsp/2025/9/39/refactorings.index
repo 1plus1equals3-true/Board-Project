@@ -10,3 +10,5 @@
 1758636854774	Move 'download_gallery.jsp' to 'board_proc'
 1758636859788	Delete element
 1758638854859	Rename resource 'side.jsp'
+1758693542499	Copy file
+1758693554809	Move 'op_paging_cal_gall.jsp' to 'include'

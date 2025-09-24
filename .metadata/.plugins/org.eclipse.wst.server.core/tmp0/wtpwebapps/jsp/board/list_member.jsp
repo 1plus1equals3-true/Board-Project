@@ -187,6 +187,7 @@ try {
 
 %>
 <%@ include file="op_top.jsp" %>
+<%@ include file="../include/side_nav.jsp" %>
 <section class="min-height">
 <h1>회원 게시판</h1><br>
 <%

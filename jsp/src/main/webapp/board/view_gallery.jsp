@@ -4,6 +4,7 @@
 <%@ page import="java.sql.*"%>        
 <%@ page import="lib.DB" %>
 <%@ page trimDirectiveWhitespaces="true" %>
+<%@ page import="java.util.ArrayList" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -211,23 +212,33 @@
     transition: background-color 0.3s ease;
 }
 
-section img {
-width: 200px;
-object-fit: contain;
+.view-table img {
+	width: 300px;
+  	height: 300px;
+  	object-fit: cover;
+  	margin: 20px;
+  	border: 1px solid #e9ecef;
+  	border-radius: 20px;
 }
 
-.td40 {
+.view-table .td40 {
 	width: 40%;
 }
 
-.td20 {
+.view-table .td20 {
 	width: 20%;
+}
+
+.view-table a {
+	text-decoration: none;
+	margin: 10px;
 }
 
 </style>
 </head>
 <body>
 <%@ include file="op_top.jsp" %>
+<%@ include file="../include/side_nav.jsp" %>
 <%
 String idx = request.getParameter("idx");
 
@@ -244,13 +255,14 @@ String ment = "";
 String comdate = "";
 String cuid = "";
 String boardtype = "";
+int upfilelength = -1;
 int temp_rank = -1;
 
 try{
     
    conn = DB.getConnection();
 
-   sql = "SELECT b.* FROM board b where b.idx='"+idx+"'";
+   sql = "SELECT b.*, g.upfilelength FROM board b LEFT JOIN board_gallery g ON b.idx = g.bidx where b.idx='"+idx+"'";
    st = conn.createStatement();
    rs = st.executeQuery(sql);
     
@@ -273,6 +285,7 @@ if(rs != null){
 	String upfile = rs.getString("upfile");
 	String originalfile = rs.getString("originalfile");
 	boardtype = rs.getString("boardtype");
+	upfilelength = rs.getInt("upfilelength");
 	
 	if (!boardtype.equals("3")) {
 		response.sendRedirect("../board/view.jsp?idx="+idx);
@@ -320,17 +333,17 @@ try {
 	</tr>
 	
 	<tr>
-		<td colspan="4"><div style="min-height: 200px;"><%= content.replace("\r\n","<br>") %></div></td>
+		<td colspan="4"><div style="min-height: 200px; text-align: left;"><%= content.replace("\r\n","<br>") %></div></td>
 	</tr>
 	
 	<tr>
-		<% if (upfile != null) { %>
-			<td>파일</td>
-			<td colspan="3">
-				<img alt="<%= originalfile %>" src="download.jsp?idx=<%= idx %>"><br>
-				<a href="download.jsp?idx=<%= idx %>" target="_blank">다운로드</a>
-		<% } %>
-			</td>
+		<td colspan="4">
+			<% for (int i=0; i<upfilelength; i++) { %>
+				<a href="../board_proc/download_gallery.jsp?idx=<%= idx %>&fileidx=<%= i %>" target="_blank">
+					<img alt="<%= originalfile %>" src="../board_proc/download_gallery.jsp?idx=<%= idx %>&fileidx=<%= i %>">
+				</a>
+			<% } %>
+		</td>
 	</tr>
 	
 </table>
@@ -737,6 +750,8 @@ function list_back() {
 		window.location.href = 'list_notice.jsp';
 	}else if (boardtype == "1") {
 		window.location.href = 'list_member.jsp';
+	}else if (boardtype == "3") {
+		window.location.href = 'list_gallery.jsp';
 	}else {
 		window.location.href = 'list_anonymity.jsp';
 	}

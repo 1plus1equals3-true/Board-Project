@@ -38,6 +38,16 @@ if(login_id == null || login_id.equals("") || login_id.equals("null")) {
 		out.println(sqll);
 	}
 }
+
+if (login_rank == 0) {
+	%> <script type="text/javascript">
+		alert("비활성화된 회원입니다.");
+		location.replace("../member/Login.jsp")
+	</script> <%
+	session.removeAttribute("ss_check");
+	return;
+}
+
 %>
 
 <style>
@@ -58,6 +68,7 @@ if(login_id == null || login_id.equals("") || login_id.equals("null")) {
     justify-content: space-between;
     align-items: center;
     width: 100%;
+    min-height: 10vh;
     margin: 0 auto;
 }
 

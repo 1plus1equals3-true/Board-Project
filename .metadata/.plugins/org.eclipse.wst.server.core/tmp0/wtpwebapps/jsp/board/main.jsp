@@ -72,18 +72,22 @@
 /* 갤러리 이미지 컨테이너 */
 .grid-container .gallery-content {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3x2 그리드 설정 */
+    grid-template-columns: repeat(3, 1fr);
     gap: 5px; /* 이미지 간 간격 */
 }
 
 /* 갤러리 이미지 스타일 */
 .gallery-content img {
-    width: 100%;
-    height: auto;
+    width: 78px;
+    height: 78px;
     object-fit: cover; /* 이미지가 컨테이너를 채우도록 설정 */
     border: 1px solid #ddd;
     border-radius: 4px;
 }
+.gallery-content a {
+	border-bottom: none !important;
+}
+
 /*검색 폼*/
 .search-form {
     display: flex;
@@ -156,11 +160,11 @@
 	</div>
 	
 	<div>
-		<h3>갤러리</h3>
+		<h3><a href="../board/list_gallery.jsp" style="border-bottom: none; text-align: center; color: black;">갤러리</a></h3>
 		<div class="gallery-content">
 		<c:forEach var="row" items="${gallerylist}">
 			<a href="<c:url value="../board/view.jsp"><c:param name="idx" value="${row.idx}" /></c:url>">
-	    		<img alt="X" src="../board/download.jsp?idx=<c:out value="${row.idx}" />">
+	    		<img alt="X" src="../board_proc/download_gallery.jsp?idx=<c:out value="${row.idx}" />&fileidx=0">
 			</a>
 		</c:forEach>
 		</div>

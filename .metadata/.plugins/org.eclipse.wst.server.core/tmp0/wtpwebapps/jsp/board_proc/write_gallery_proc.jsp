@@ -19,6 +19,7 @@ login_id = (String)session.getAttribute("ss_check");
 String ip = java.net.Inet4Address.getLocalHost().getHostAddress();
 String fileNames[] = new String[10];
 String originalFileNames[] = new String[10];
+int upfilelength = 0;
 
 	Date today = new Date(); // 현재 날짜와 시간 객체 생성
 	SimpleDateFormat yearFormat = new SimpleDateFormat("yyyyMMdd"); // 년도 형식 지정
@@ -61,7 +62,7 @@ String originalFileNames[] = new String[10];
 	    // 전송한 전체 파일이름들을 가져온다.
 	    Enumeration files = multi.getFileNames();
 	    
-	    int i = 0; // 파일 저장 번호
+	    int i = 0; // files 순회 번호
 	 	// while 반복문을 사용하여 모든 파일 정보를 가져옴
 	    while (files.hasMoreElements()) {
 	    	
@@ -79,13 +80,13 @@ String originalFileNames[] = new String[10];
 	            i++;
 	        }
 	    }
-     
+	    upfilelength = i;
     
 	}catch(Exception e){
    		e.printStackTrace();
 	}
 
-    if (fileName == null) {
+    if (fileNames[0] == null) {
     	dir = null;
     }
 
@@ -133,8 +134,8 @@ try {
 	
 		ps.close();
 		
-		sql = "insert into board_gallery(bidx,upfile_0,upfile_1,upfile_2,upfile_3,upfile_4,upfile_5,upfile_6,upfile_7,upfile_8,upfile_9,originalfile_0,originalfile_1,originalfile_2,originalfile_3,originalfile_4,originalfile_5,originalfile_6,originalfile_7,originalfile_8,originalfile_9) " +
-			   " values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		sql = "insert into board_gallery(bidx,upfile_0,upfile_1,upfile_2,upfile_3,upfile_4,upfile_5,upfile_6,upfile_7,upfile_8,upfile_9,originalfile_0,originalfile_1,originalfile_2,originalfile_3,originalfile_4,originalfile_5,originalfile_6,originalfile_7,originalfile_8,originalfile_9,relativedir,upfilelength) " +
+			   " values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 	
 		ps = conn.prepareStatement(sql);
 		
@@ -159,6 +160,8 @@ try {
 		ps.setString(19, originalFileNames[7]);
 		ps.setString(20, originalFileNames[8]);
 		ps.setString(21, originalFileNames[9]);
+		ps.setString(22, dir);
+		ps.setInt(23, upfilelength);
 		
 		ps.executeUpdate();
 		

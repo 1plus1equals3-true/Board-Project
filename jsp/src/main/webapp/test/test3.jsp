@@ -5,30 +5,19 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>JSTL 예시 (View)</title>
+    <title>예시</title>
+    <style type="text/css">
+    p {
+    	width: 130px;
+    	overflow: hidden;
+    	white-space: nowrap;
+    	text-overflow: ellipsis;
+    }
+    </style>
 </head>
 <body>
 <div id="file-container">
-  <input type="file" id="upfile">
+ <p>asdsadasdsadasdsajdlkawjdfwqlkfwakldjalkwdakwldmklawmdlkawmxlkwamdlkwamdklwamdkw</p>
 </div>
-<button type="button" onclick="clearFile()">파일 취소</button>
-
-<script>
-function clearFile() {
-  const fileInput = document.getElementById('upfile');
-  const parent = fileInput.parentNode;
-  
-  // 현재 input 요소 제거
-  parent.removeChild(fileInput);
-  
-  // 새로운 input 요소 생성
-  const newInput = document.createElement('input');
-  newInput.type = 'file';
-  newInput.id = 'upfile';
-
-  // 새 요소를 부모에 추가
-  parent.appendChild(newInput);
-}
-</script>
 </body>
 </html>

@@ -2,7 +2,7 @@
     pageEncoding="UTF-8"%>
     <%@ page import="java.sql.*" %>
     <%@ page import="lib.DB" %>
-
+<%@ page import="java.util.ArrayList" %>
 <%
 String sql = "";
 String key = request.getParameter("key");
@@ -11,23 +11,23 @@ if (key == null) {key = "";}
 if (word == null) {word = "";}
 
 if(word != null && !word.equals("")) {
-	sql = " SELECT count(*) as cnt from board where boardtype = '1' and "+key+" like '%"+word+"%'";
+	sql = " SELECT count(*) as cnt from board where boardtype = '3' and "+key+" like '%"+word+"%'";
 }else {
-	sql = "select count(*) as cnt from board WHERE boardtype = '1'";
+	sql = "select count(*) as cnt from board WHERE boardtype = '3'";
 }
 
 Connection conn = null;
 Statement st = null;
 ResultSet rs = null;
 %>
-<%@ include file="op_paging_cal.jsp" %>
+<%@ include file="../include/op_paging_cal_gall.jsp" %>
 
 
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
-<title>게시판</title>
+<title>갤러리</title>
 <style>
 *{
 	margin: 0 auto;
@@ -162,6 +162,85 @@ ResultSet rs = null;
 .td20 {
 	width: 20%;
 }
+
+/* 갤러리 컨테이너 (부모 요소) */
+.gallery-container {
+	width: 80%;
+    display: flex;
+    flex-wrap: wrap; /* 창 크기에 따라 박스를 다음 줄로 넘기기 */
+    gap: 20px; /* 박스 사이의 간격 */
+    /*justify-content: center; /* 박스들을 가운데 정렬 */
+    padding: 20px;
+}
+
+/* 개별 갤러리 박스 */
+.gallery-box {
+    /*flex-basis: calc(20%); /*한 box당 크기*/
+    width: 23.33%;
+    padding: 10px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px; /* 둥근 모서리 */
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 부드러운 그림자 */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* 호버 효과를 위한 전환 */
+    text-align: left; /* 내부 텍스트 왼쪽 정렬 */
+    margin: 0;
+}
+
+/* 호버 시 효과 */
+.gallery-box:hover {
+    transform: translateY(-5px); /* 마우스를 올리면 살짝 위로 이동 */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* 그림자를 더 진하게 */
+}
+
+/* 이미지 스타일 */
+.gallery-box img {
+    width: 100%; /* 박스 너비에 꽉 차게 */
+    height: 150px; /* 고정 높이 */
+    object-fit: cover; /* 이미지가 잘리지 않게 채우기 */
+    border-radius: 4px; /* 이미지 모서리 둥글게 */
+    margin-bottom: 10px; /* 이미지와 텍스트 사이 간격 */
+}
+
+/* 제목 스타일 */
+.gallery-box h4 {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 5px;
+}
+
+.gallery-box h4 a {
+    color: #4CAF50; /* 제목 링크 색상 */
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.gallery-box a {
+    display: block;
+    text-decoration: none;
+    color: #333;
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 5px;
+    width: 100%;
+    overflow: hidden;
+   	white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.gallery-box a:hover {
+    text-decoration: underline;
+    color: #0056b3;
+}
+
+/* 작성자, 날짜, 조회수 정보 */
+.gallery-box p {
+    font-size: 12px;
+    color: #6c757d;
+    margin: 0;
+    display: inline-block;
+    margin-right: 10px;
+}
 </style>
 </head>
 <body>
@@ -171,9 +250,9 @@ try {
 	conn = DB.getConnection();
 	
 	if(word != null && !word.equals("")) {
-		sql = "SELECT b.*, m.name AS memname, COUNT(c.bidx) AS comment_count FROM board b LEFT JOIN member m ON b.uid = m.uid LEFT JOIN comment c ON b.idx = c.bidx WHERE boardtype='1' and b."+key+" LIKE '%"+word+"%' GROUP BY b.idx ORDER BY b.idx DESC limit "+offset+"," + scale;
+		sql = "SELECT b.*, m.name AS memname, COUNT(c.bidx) AS comment_count FROM board b LEFT JOIN member m ON b.uid = m.uid LEFT JOIN comment c ON b.idx = c.bidx WHERE boardtype='3' and b."+key+" LIKE '%"+word+"%' GROUP BY b.idx ORDER BY b.idx DESC limit "+offset+"," + scale;
 	} else {
-		sql = "SELECT b.*, COUNT(c.bidx) AS comment_count FROM board b LEFT JOIN comment c ON b.idx = c.bidx WHERE boardtype='1' GROUP BY b.idx ORDER BY b.idx DESC limit "+offset+"," + scale;
+		sql = "SELECT b.*, COUNT(c.bidx) AS comment_count FROM board b LEFT JOIN comment c ON b.idx = c.bidx WHERE boardtype='3' GROUP BY b.idx ORDER BY b.idx DESC limit "+offset+"," + scale;
 	}
 	
 	
@@ -187,8 +266,9 @@ try {
 
 %>
 <%@ include file="op_top.jsp" %>
+<%@ include file="../include/side_nav.jsp" %>
 <section class="min-height">
-<h1>회원 게시판</h1><br>
+<h1>갤러리</h1><br>
 <%
 	if(word != null && !word.equals("")) {
 %>
@@ -197,16 +277,7 @@ try {
 	}
 %>
 
-<table class="board-table">
-	<thead>
-		<tr>
-			<td class="td10">번호</td>
-			<td class="td50">제목</td>
-			<td class="td10">작성자</td>
-			<td class="td20">작성일</td>
-			<td class="td10">조회수</td>
-		</tr>
-	</thead>
+<div class="gallery-container">
 <%
    while (rs.next()) {
       String idx = rs.getString("idx");
@@ -219,21 +290,19 @@ try {
       String comment_count = rs.getString("comment_count");
    
 %>
-	<tbody>
-		<tr>
-			<td><%= idx %></td>
-			<td style="text-align: left;"><a href="view.jsp?idx=<%= idx %>"><%= title %><% if(!comment_count.equals("0")){ %> (<%= comment_count %>) <% } %></a></td>
-			<td><%= name %></td>
-			<td><%= regdate %></td>
-			<td><%= hit %></td>
-		</tr>
-	</tbody>
+	<div class="gallery-box">
+		<a href="view.jsp?idx=<%= idx %>">
+			<img alt="" src="../board_proc/download_gallery.jsp?idx=<%= idx %>&fileidx=0">
+		</a>
+			<h4><%= idx %></h4><a href="view.jsp?idx=<%= idx %>"><%= title %><% if(!comment_count.equals("0")){ %> (<%= comment_count %>) <% } %></a>
+			<p>작성자 <%= name %></p><br><p><%= regdate %></p><br><p>조회수 <%= hit %></p>
+	</div>
 <% } %>
-	
-</table>
+
+</div>
 <br>
 <% if (login_rank >= 0) { %>
-<a href="write.jsp"><button type="button" class="wwrite">글쓰기</button></a>
+<a href="write_gallery.jsp"><button type="button" class="wwrite">글쓰기</button></a>
 <% } %>
 <br><br>
 

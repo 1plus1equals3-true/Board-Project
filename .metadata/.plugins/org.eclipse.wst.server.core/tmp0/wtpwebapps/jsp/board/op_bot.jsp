@@ -10,6 +10,7 @@
     justify-content: space-around;
     align-items: flex-start;
     width: 100%;
+    min-height: 10vh;
     margin-left: auto;
     margin-right: auto;
 }

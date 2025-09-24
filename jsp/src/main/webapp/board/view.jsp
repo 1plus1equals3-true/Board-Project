@@ -211,16 +211,44 @@
     transition: background-color 0.3s ease;
 }
 
-section img {
+.view-table img {
 width: 200px;
 object-fit: contain;
 }
 
-.td40 {
+.view-table .download {
+	display: inline-block; /* 버튼 크기 조정을 위해 인라인 블록으로 설정 */
+ 	padding: 12px 24px; /* 내부 여백 */
+  	border: 1px solid #007bff; /* 테두리 */
+  	border-radius: 5px; /* 모서리 둥글게 */
+  	background-color: #007bff; /* 배경색 */
+  	color: #fff; /* 글자색 */
+  	text-decoration: none; /* 밑줄 제거 */
+  	font-weight: bold; /* 글자 두껍게 */
+  	font-family: Arial, sans-serif; /* 폰트 설정 */
+  
+  	/* 애니메이션 및 그림자 효과 */
+ 	transition: all 0.3s ease; /* 모든 속성에 0.3초 동안 부드러운 전환 효과 */
+  	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 미세한 그림자 효과 */
+}
+
+.view-table .download:hover {
+	background-color: #0056b3; /* 배경색을 조금 더 진하게 */
+  	border-color: #0056b3; /* 테두리 색상도 변경 */
+  	transform: translateY(-2px); /* Y축으로 살짝 위로 이동하여 입체감 부여 */
+  	box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15); /* 그림자도 더 진하게 */
+}
+
+.view-table .download:active {
+	transform: translateY(0); /* 원래 위치로 돌아오게 하여 누르는 느낌 */
+  	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 그림자도 줄여서 누르는 효과 강조 */
+}
+
+.view-table .td40 {
 	width: 40%;
 }
 
-.td20 {
+.view-table .td20 {
 	width: 20%;
 }
 
@@ -228,6 +256,7 @@ object-fit: contain;
 </head>
 <body>
 <%@ include file="op_top.jsp" %>
+<%@ include file="../include/side_nav.jsp" %>
 <%
 String idx = request.getParameter("idx");
 
@@ -320,15 +349,14 @@ try {
 	</tr>
 	
 	<tr>
-		<td colspan="4"><div style="min-height: 200px;"><%= content.replace("\r\n","<br>") %></div></td>
+		<td colspan="4"><div style="min-height: 200px; text-align: left;"><%= content.replace("\r\n","<br>") %></div></td>
 	</tr>
 	
 	<tr>
 		<% if (upfile != null) { %>
-			<td>파일</td>
-			<td colspan="3">
-				<img alt="<%= originalfile %>" src="download.jsp?idx=<%= idx %>"><br>
-				<a href="download.jsp?idx=<%= idx %>" target="_blank">다운로드</a>
+			<td>첨부 파일</td>
+			<td colspan="3"><p><%= originalfile %></p><br>
+				<a href="download.jsp?idx=<%= idx %>" class="download" target="_blank">다운로드</a>
 		<% } %>
 			</td>
 	</tr>

@@ -51,4 +51,33 @@ public class DB {
 	   }
 	   return "<script> alert(\""+alert+"\"); location.replace(\""+loc+"\"); </script>";
    }
+   
+   public static String subStr(String str, int byteLength, String dot) {
+       
+	      if (str == null) {
+	         return null;
+	      }
+	        
+	        java.nio.charset.Charset charset = java.nio.charset.Charset.forName("UTF-8");
+	        
+	        byte[] bytes = str.getBytes(charset);
+
+	        if (bytes.length <= byteLength) {
+	            return str;
+	        }
+
+	        int cutLength = byteLength;
+	        while (cutLength > 0 && (bytes[cutLength] & 0xC0) == 0x80) {
+	            cutLength--;
+	        }
+	        
+	        if(dot == null || dot.equals(""))
+	        {
+	           dot = "...";
+	        }
+	        
+	        String curStr = new String(bytes, 0, cutLength, charset) + dot;
+
+	        return curStr;
+	    }
 }

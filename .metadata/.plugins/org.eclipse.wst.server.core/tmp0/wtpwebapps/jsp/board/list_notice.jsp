@@ -187,6 +187,7 @@ try {
 
 %>
 <%@ include file="op_top.jsp" %>
+<%@ include file="../include/side_nav.jsp" %>
 <section class="min-height">
 <h1>공 지 사 항</h1><br>
 <%

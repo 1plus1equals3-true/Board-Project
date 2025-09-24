@@ -113,19 +113,20 @@ body {
 		
 		<tr>
 			<td>아이디</td>
-			<td><input type="text" name="loginid"></td>
-			<td rowspan="2">
-				<input type="submit" value="로그인">
-			</td>
+			<td colspan="2"><input type="text" name="loginid"></td>
 		</tr>
 		
 		<tr>
 			<td>비밀번호</td>
-			<td><input type="password" name="loginpass"></td>
+			<td colspan="2"><input type="password" name="loginpass"></td>
 		</tr>
 		
 		<tr>
-			<td colspan="2"><a href="Join.jsp"><button type="button" class="btn-join">회원가입</button></a></td>
+			<td colspan="3"><input type="submit" value="로그인"></td>
+		</tr>
+		
+		<tr>
+			<td colspan="3"><a href="Join.jsp"><button type="button" class="btn-join">회원가입</button></a></td>
 			<td><a href="../board_proc/main_proc.jsp"><button type="button" class="btn-join">취소</button></a></td>
 		</tr>
 		

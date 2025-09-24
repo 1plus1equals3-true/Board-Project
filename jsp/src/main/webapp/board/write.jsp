@@ -94,6 +94,7 @@
 </head>
 <body>
 <%@ include file="op_top.jsp" %>
+<%@ include file="../include/side_nav.jsp" %>
 <section class="min-height">
 <h1>글쓰기</h1><br>
 <form action="../board_proc/write_proc.jsp" method="post" enctype="multipart/form-data" class="write-form">

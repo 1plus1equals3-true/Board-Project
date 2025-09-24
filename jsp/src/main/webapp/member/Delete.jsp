@@ -45,7 +45,7 @@ String sql = "";
     
     
    //쿼리문 작성
-   sql = " delete from member where uid ='"+uid+"' ";
+   sql = " UPDATE member SET member_rank=0, upfile=NULL, originalfile=NULL, originaldir=NULL WHERE uid ='"+uid+"' ";
    
    //Connection객체로부터 Statement객체를 얻어내는 코드
    Statement st = conn.createStatement();
@@ -54,8 +54,8 @@ String sql = "";
    st.executeUpdate(sql);
 
    out.println("삭제 성공");
-   
-   response.sendRedirect("List.jsp");
+   session.removeAttribute("ss_check");
+   response.sendRedirect("../board_proc/main_proc.jsp");
     
   }catch(Exception e){ 
     e.printStackTrace();

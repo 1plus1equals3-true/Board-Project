@@ -11,9 +11,10 @@
     pageEncoding="UTF-8"%>
 <%@ page import="java.sql.*" %>
 <%@ page import="lib.DB" %>
+<%@ page import="java.util.ArrayList" %>
 <%
 String idx = request.getParameter("idx");
-String fileidx = request.getParameter("fileidx"); // idx와 fileidx를 넘겨받아 다운로드 처리하게 만들기
+String fileidx = request.getParameter("fileidx");
 
 String sql = "";
 Connection conn=null;
@@ -27,14 +28,14 @@ try{
 	 
 	 conn = DB.getConnection();
 	 {
-		 sql = "select * from board where idx=?";
+		 sql = "select upfile_"+fileidx+", originalfile_"+fileidx+", relativedir from board_gallery where bidx=?";
 		 ps = conn.prepareStatement(sql);
 		 
 		 ps.setString(1, idx);
 		 rs = ps.executeQuery();
 		 rs.next();
-		 upfile = rs.getString("upfile");
-		 originalfile = rs.getString("originalfile");
+		 upfile = rs.getString("upfile_"+fileidx);
+		 originalfile = rs.getString("originalfile_"+fileidx);
 		 originaldir = rs.getString("relativedir");
 		 
 	 }

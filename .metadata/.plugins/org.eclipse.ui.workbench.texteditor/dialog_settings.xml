@@ -3,21 +3,21 @@
 	<item key="hasShownOverlayPopupBefore" value="true"/>
 	<item key="replaceBarOpen" value="true"/>
 	<list key="searchhistory">
+		<item value="scale"/>
+		<item value="list"/>
+		<item value="목록"/>
+		<item value="2"/>
+		<item value="1"/>
+		<item value="다운"/>
+		<item value="dir"/>
+		<item value="td40"/>
+		<item value="td409"/>
+		<item value="img"/>
+		<item value="top"/>
 		<item value="filetimeex"/>
 		<item value="fileIndex"/>
 		<item value="console.log"/>
 		<item value="consol"/>
-		<item value="console"/>
-		<item value="con"/>
-		<item value="}"/>
-		<item value="${"/>
-		<item value="createCommentRow"/>
-		<item value="data"/>
-		<item value="commentData"/>
-		<item value="`"/>
-		<item value="&quot;"/>
-		<item value="login_rank"/>
-		<item value="temp_rank"/>
 	</list>
 	<list key="replacehistory">
 		<item value="`"/>

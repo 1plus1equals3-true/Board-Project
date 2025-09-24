@@ -33,7 +33,7 @@ try {
 	sql = "SELECT * FROM board WHERE boardtype=1 ORDER BY idx DESC LIMIT 5";
 	sql2 = "SELECT * FROM board WHERE boardtype=0 ORDER BY idx DESC LIMIT 5";
 	sql3 = "SELECT * FROM board WHERE boardtype=2 ORDER BY idx DESC LIMIT 5";
-	sql4 = "SELECT * FROM board WHERE upfile IS not NULL ORDER BY idx DESC LIMIT 3";
+	sql4 = "SELECT * FROM board WHERE boardtype=3 ORDER BY idx DESC LIMIT 6";
 	
 	st = conn.createStatement();
 	st2 = conn.createStatement();

@@ -139,6 +139,7 @@ if(rs != null){
 %>
 
 <%@ include file="op_top.jsp" %>
+<%@ include file="../include/side_nav.jsp" %>
 
 <%
 

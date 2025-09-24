@@ -5,8 +5,8 @@ if(login_id == null || login_id.equals(""))
 {
 %>
 <script>
-alert("로그인 하세요.");
-location.replace("../member/Login.jsp");
+alert("권한 없음");
+history.back();
 </script>
 <%
 	return;
