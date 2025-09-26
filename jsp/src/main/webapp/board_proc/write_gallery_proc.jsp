@@ -19,7 +19,6 @@ login_id = (String)session.getAttribute("ss_check");
 String ip = java.net.Inet4Address.getLocalHost().getHostAddress();
 String fileNames[] = new String[10];
 String originalFileNames[] = new String[10];
-int upfilelength = 0;
 
 	Date today = new Date(); // 현재 날짜와 시간 객체 생성
 	SimpleDateFormat yearFormat = new SimpleDateFormat("yyyyMMdd"); // 년도 형식 지정
@@ -80,7 +79,6 @@ int upfilelength = 0;
 	            i++;
 	        }
 	    }
-	    upfilelength = i;
     
 	}catch(Exception e){
    		e.printStackTrace();
@@ -134,37 +132,23 @@ try {
 	
 		ps.close();
 		
-		sql = "insert into board_gallery(bidx,upfile_0,upfile_1,upfile_2,upfile_3,upfile_4,upfile_5,upfile_6,upfile_7,upfile_8,upfile_9,originalfile_0,originalfile_1,originalfile_2,originalfile_3,originalfile_4,originalfile_5,originalfile_6,originalfile_7,originalfile_8,originalfile_9,relativedir,upfilelength) " +
-			   " values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-	
-		ps = conn.prepareStatement(sql);
+		sql = "insert into board_gallery(bidx,upfile,originalfile,relativedir) " +
+				   " values(?,?,?,?)";
 		
-		ps.setString(1, bidx);
-		ps.setString(2, fileNames[0]);
-		ps.setString(3, fileNames[1]);
-		ps.setString(4, fileNames[2]);
-		ps.setString(5, fileNames[3]);
-		ps.setString(6, fileNames[4]);
-		ps.setString(7, fileNames[5]);
-		ps.setString(8, fileNames[6]);
-		ps.setString(9, fileNames[7]);
-		ps.setString(10, fileNames[8]);
-		ps.setString(11, fileNames[9]);
-		ps.setString(12, originalFileNames[0]);
-		ps.setString(13, originalFileNames[1]);
-		ps.setString(14, originalFileNames[2]);
-		ps.setString(15, originalFileNames[3]);
-		ps.setString(16, originalFileNames[4]);
-		ps.setString(17, originalFileNames[5]);
-		ps.setString(18, originalFileNames[6]);
-		ps.setString(19, originalFileNames[7]);
-		ps.setString(20, originalFileNames[8]);
-		ps.setString(21, originalFileNames[9]);
-		ps.setString(22, dir);
-		ps.setInt(23, upfilelength);
-		
-		ps.executeUpdate();
-		
+		for (int i=0; i<10; i++) {
+			if (fileNames[i] != null) {
+				
+				ps = conn.prepareStatement(sql);
+				
+				ps.setString(1, bidx);
+				ps.setString(2, fileNames[i]);
+				ps.setString(3, originalFileNames[i]);
+				ps.setString(4, dir);
+				
+				ps.executeUpdate();
+				ps.close();
+			}
+		}
 	
 
 		%> <script type="text/javascript">

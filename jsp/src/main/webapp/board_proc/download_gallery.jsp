@@ -15,6 +15,7 @@
 <%
 String idx = request.getParameter("idx");
 String fileidx = request.getParameter("fileidx");
+int intfileidx = Integer.parseInt(fileidx);
 
 String sql = "";
 Connection conn=null;
@@ -28,14 +29,18 @@ try{
 	 
 	 conn = DB.getConnection();
 	 {
-		 sql = "select upfile_"+fileidx+", originalfile_"+fileidx+", relativedir from board_gallery where bidx=?";
+		 sql = "select * from board_gallery where bidx=?";
 		 ps = conn.prepareStatement(sql);
 		 
 		 ps.setString(1, idx);
 		 rs = ps.executeQuery();
-		 rs.next();
-		 upfile = rs.getString("upfile_"+fileidx);
-		 originalfile = rs.getString("originalfile_"+fileidx);
+		 
+		 for (int i=0; i<intfileidx+1; i++) {
+			 rs.next();
+		 }
+		 
+		 upfile = rs.getString("upfile");
+		 originalfile = rs.getString("originalfile");
 		 originaldir = rs.getString("relativedir");
 		 
 	 }

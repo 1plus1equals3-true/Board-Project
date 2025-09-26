@@ -255,14 +255,14 @@ String ment = "";
 String comdate = "";
 String cuid = "";
 String boardtype = "";
-int upfilelength = -1;
+int file_count = -1;
 int temp_rank = -1;
 
 try{
     
    conn = DB.getConnection();
 
-   sql = "SELECT b.*, g.upfilelength FROM board b LEFT JOIN board_gallery g ON b.idx = g.bidx where b.idx='"+idx+"'";
+   sql = "SELECT b.*, COUNT(g.bidx) AS file_count FROM board b LEFT JOIN board_gallery g ON b.idx = g.bidx where b.idx='"+idx+"'";
    st = conn.createStatement();
    rs = st.executeQuery(sql);
     
@@ -285,7 +285,7 @@ if(rs != null){
 	String upfile = rs.getString("upfile");
 	String originalfile = rs.getString("originalfile");
 	boardtype = rs.getString("boardtype");
-	upfilelength = rs.getInt("upfilelength");
+	file_count = rs.getInt("file_count");
 	
 	if (!boardtype.equals("3")) {
 		response.sendRedirect("../board/view.jsp?idx="+idx);
@@ -338,7 +338,7 @@ try {
 	
 	<tr>
 		<td colspan="4">
-			<% for (int i=0; i<upfilelength; i++) { %>
+			<% for (int i=0; i<file_count; i++) { %>
 				<a href="../board_proc/download_gallery.jsp?idx=<%= idx %>&fileidx=<%= i %>" target="_blank">
 					<img alt="<%= originalfile %>" src="../board_proc/download_gallery.jsp?idx=<%= idx %>&fileidx=<%= i %>">
 				</a>
@@ -445,8 +445,9 @@ try {
 			<%
 		}
 
-}else if (boardtype.equals("1")) {
-	if (login_rank >= 0) {
+}else if (boardtype.equals("1") || boardtype.equals("3")) {
+	if (uid == null) { uid = ""; }
+	if (login_rank == 9 || uid.equals(login_id)) {
 		%>
 		<button type="button" class="btn-modify" onclick="modify()">수정</button>
 		<button type="button" class="btn-delete" onclick="wdelete()">삭제</button>
@@ -770,9 +771,9 @@ function modify() {
 			return;
 		}
 		
-	}else if (boardtype == "1") {
+	}else if (boardtype == "1" || boardtype == "3") {
 		if (login_rank == 9) {
-			window.location.href = 'modify.jsp?idx=' + idx;
+			window.location.href = 'modify_gallery.jsp?idx=' + idx;
 		}else if (0 <= login_rank && login_rank < 9) {
 			let passinput = prompt('비밀번호를 입력하세요');
 					if (passinput === null) {
@@ -781,7 +782,7 @@ function modify() {
 						alert("아무것도 입력하지 않았습니다.");
 						return;
 					} else {
-						window.location.href = 'modify_check.jsp?idx=' + idx + "&passinput=" + passinput;
+						window.location.href = 'modify_gallery.jsp?idx=' + idx;// + "&passinput=" + passinput;
 						return;
 					}
 
@@ -825,14 +826,14 @@ function wdelete() {
 			return;
 		}
 		
-	}else if (boardtype == "1") {
+	}else if (boardtype == "1" || boardtype == "3") {
 		if (login_rank == 9) {
 			var con_del_check = confirm("게시글을 삭제하시겠습니까?");
 			if (con_del_check) {
 				location.replace("../board_proc/delete_proc.jsp?idx=<%= idx %>");
 			}
 			
-		}else if (0 <= login_rank && login_rank < 9) {
+		}else if (0 < login_rank && login_rank < 9) {
 			let passinput = prompt('삭제하려면 비밀번호를 입력하세요.');
 					if (passinput === null) {
 						return;

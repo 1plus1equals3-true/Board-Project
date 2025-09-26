@@ -157,7 +157,7 @@ header img {
 </style>
 <% if(login_id == null || login_id.equals("") || login_id.equals("null")) { %>
 <header class="board-header">
-    <h1><a href="../board_proc/main_proc.jsp">게 시 판</a></h1>
+    <h1><a href="../board_proc/main_proc.jsp">GO GO BOARD</a></h1>
     <nav>
         <ul>
             <li><span class="user-info">비로그인</span></li>
@@ -169,7 +169,7 @@ header img {
 </header>
 <% }else { %>
 <header class="board-header">
-    <h1><a href="../board_proc/main_proc.jsp">게 시 판</a></h1>
+    <h1><a href="../board_proc/main_proc.jsp">GO GO BOARD</a></h1>
     <nav>
         <ul>
             <li><span class="user-info">이름 : <%= login_name %></span></li>

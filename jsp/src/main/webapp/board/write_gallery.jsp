@@ -57,7 +57,7 @@
     text-align: right;
 }
 
-.write-form input[type="submit"],
+.write-form .write_sub,
 .write-form .btn-cancel {
     padding: 10px 20px;
     border: none;
@@ -68,12 +68,12 @@
     margin-left: 8px;
 }
 
-.write-form input[type="submit"] {
+.write-form .write_sub {
     background-color: #007bff;
     color: white;
 }
 
-.write-form input[type="submit"]:hover {
+.write-form .write_sub:hover {
     background-color: #0056b3;
 }
 
@@ -142,7 +142,7 @@
 <%@ include file="../include/side_nav.jsp" %>
 <section class="min-height">
 <h1>갤러리 글쓰기</h1><br>
-<form action="../board_proc/write_gallery_proc.jsp" method="post" enctype="multipart/form-data" class="write-form">
+<form name="write_form" action="../board_proc/write_gallery_proc.jsp" method="post" enctype="multipart/form-data" class="write-form">
 	<table>
 		
 		<tr>
@@ -170,7 +170,7 @@
 		
 		<tr>
 			<td colspan="2">
-				<input type="submit" value="작성">
+				<input type="button" class="write_sub" value="작성" onclick="gallery_submit()">
 				<button type="button" class="btn-cancel" onclick="history.back()">취소</button>
 			</td>
 		</tr>
@@ -185,7 +185,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     const fileArea = document.querySelector('.write-form tbody tr:nth-child(3) td:nth-child(2)');
     let fileIndex = 0;
-    const file_limit = 10 +1; // 파일 업로드 제한 수
+    const file_total = 10; // 파일 업로드 제한 수
+    const file_limit = file_total +1;
 
     // 초기 파일 입력 필드에 이벤트 리스너를 즉시 연결
     addEventListenersToFileInput(document.getElementById('upfile_0'));
@@ -208,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // 전체 파일 입력 필드의 개수가 n개 이상이면
             if (allInputs.length >= file_limit) {
                 // 경고창을 띄우고
-                alert('더 이상 파일을 업로드할 수 없습니다. (최대 '+(file_limit-1)+'개)');
+                alert('더 이상 파일을 업로드할 수 없습니다. (최대 '+(file_total)+'개)');
                 // 현재 선택한 파일의 값을 비운 뒤 함수 종료
                 currentInput.value = '';
                 return; 
@@ -284,6 +285,35 @@ document.addEventListener('DOMContentLoaded', () => {
         addEventListenersToFileInput(newInput);
     }
 });
+
+//////////
+function gallery_submit() {
+    // 1. 문서의 모든 type="file" 인풋 요소를 가져옵니다.
+    // querySelectorAll을 사용하면 'input' 태그를 모두 가져올 필요 없이 type="file"만 가져올 수 있습니다.
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    
+    let isFileSelected = false; // 파일이 하나라도 선택되었는지 여부를 저장할 변수
+
+    // 2. 모든 파일 인풋을 순회하며 파일이 선택되었는지 확인합니다.
+    for (const input of fileInputs) {
+        // 동적으로 추가된 마지막 빈 파일 입력 필드는 무시하고, 
+        // 파일이 실제로 선택된 인풋만 확인합니다.
+        if (input.files && input.files.length > 0) {
+            isFileSelected = true; // 파일이 하나라도 선택되었음을 표시
+            break; // 하나라도 찾았으면 더 이상 검사할 필요 없이 반복 중단
+        }
+    }
+
+    // 3. 파일 선택 여부에 따라 처리합니다.
+    if (!isFileSelected) {
+        alert("갤러리는 파일을 최소 1개 이상 업로드해야 합니다.");
+        return; // 파일이 하나도 선택되지 않았으면 폼 제출을 막습니다.
+    }
+    
+    // 4. 모든 검증을 통과했으면 폼을 제출합니다. (name 속성 확인 완료)
+    document.write_form.submit();
+}
+//////////
 </script>
 
 </body>

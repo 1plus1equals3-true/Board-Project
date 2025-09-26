@@ -29,8 +29,6 @@
 }
 </style>
 <footer class="board-footer">
-    <div>내용 없음</div>
-    <div>내용 없음</div>
-    <div>내용 없음</div>
-    <div>내용 없음</div>
+    <div>Copyright ⓒ 2025 GO GO.</div>
+    <div>All Rights Reserved.</div>
 </footer>

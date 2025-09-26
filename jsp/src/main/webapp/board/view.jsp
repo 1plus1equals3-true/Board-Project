@@ -461,7 +461,8 @@ try {
 		}
 
 }else if (boardtype.equals("1")) {
-	if (login_rank >= 0) {
+	if (uid == null) { uid = ""; }
+	if (login_rank == 9 || uid.equals(login_id)) {
 		%>
 		<button type="button" class="btn-modify" onclick="modify()">수정</button>
 		<button type="button" class="btn-delete" onclick="wdelete()">삭제</button>

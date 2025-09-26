@@ -1,0 +1,363 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*"%>       
+<%@ page import="java.util.Date" %>
+<%@ page import="java.text.SimpleDateFormat" %>
+<%@ page import="java.util.Arrays" %>
+<%@ page import="lib.DB" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Modify</title>
+<style>
+*{
+	margin: 0 auto;
+	padding: 0;
+	text-align: center;
+	box-sizing: border-box;
+}
+.write-form table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin: 20px auto;
+    max-width: 600px;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.write-form td {
+    padding: 15px;
+    border: 1px solid #e9ecef;
+}
+
+.write-form td:first-child {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    color: #495057;
+    text-align: center;
+    width: 120px;
+}
+
+.write-form input[type="text"],
+.write-form textarea {
+    width: calc(100% - 24px);
+    padding: 10px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+    text-align: left;
+}
+
+.write-form textarea {
+    height: 200px;
+    resize: vertical;
+}
+
+.write-form .button-container {
+    text-align: right;
+}
+
+.write-form .modify_sub,
+.write-form .btn-cancel {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-left: 8px;
+}
+
+.write-form .modify_sub {
+    background-color: #007bff;
+    color: white;
+}
+
+.write-form .modify_sub:hover {
+    background-color: #0056b3;
+}
+
+.write-form .btn-cancel {
+    background-color: #6c757d;
+    color: white;
+}
+
+.write-form .btn-cancel:hover {
+    background-color: #5a6268;
+}
+
+/* a 태그 안에 button을 넣었을 때 스타일 */
+.write-form a {
+    text-decoration: none;
+}
+
+.file-container {
+  /* 세로 정렬(column) 대신 가로 정렬(row)로 변경 */
+  display: flex;
+  flex-direction: row; 
+  align-items: center; /* 세로 중앙 정렬 */
+  gap: 5px; /* 요소들 사이의 간격 */
+
+  /* 나머지 디자인 스타일은 그대로 유지 */
+  padding: 3px;
+  border-radius: 12px;
+  background-color: white;
+}
+
+/* 파일 입력 필드 스타일 */
+.file-container input[type="file"] {
+  /* 너비가 너무 넓어지지 않도록 조정 */
+  width: 100%;
+  max-width: 350px; /* 적절한 너비로 조정하세요 */
+  font-family: Arial, sans-serif;
+  color: #555;
+  border: 1px solid #BDBDBD;
+  border-radius: 8px;
+  padding: 10px 15px;
+}
+
+/* 버튼 스타일 */
+.file-container button {
+  padding: 10px 18px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  color: #555;
+  background-color: #E0E0E0;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: fit-content;
+}
+
+/* 호버 효과 */
+.file-container button:hover {
+  background-color: #BDBDBD;
+}
+
+/* 기존파일 보여주는 박스 */
+.file-item {
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    padding: 5px 0;
+}
+
+/* 기존파일 이름 */
+.file-name-display {
+    flex-grow: 1; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    text-align: left;
+}
+
+/* 기존파일 삭제버튼 */
+.file-delete-btn {
+	width: 20px;            /* 너비 지정 */
+    height: 20px;           /* 높이 지정 (정사각형) */
+    padding: 0;             /* 내부 여백 제거 */
+    border: 1px solid #e0baba; /* 옅은 테두리 추가 */
+    border-radius: 50%;     /* 원형으로 만듬 */
+    background: #ffebeb;    /* 배경색 지정 */
+    color: #cc4c4c;         /* 아이콘(X) 색상 지정 */
+    font-size: 12px;        /* 아이콘(X) 크기 조절 */
+    line-height: 18px;      /* 텍스트(X)를 세로 중앙에 정렬 */
+    text-align: center;     /* 텍스트(X)를 가로 중앙에 정렬 */
+    cursor: pointer;        /* 마우스 오버 시 포인터 변경 */
+    flex-shrink: 0;
+}
+
+.file-delete-btn:hover {
+	background: #ffdede; /* 배경색 살짝 어둡게 */
+    color: #a03c3c;         /* 아이콘 색상 진하게 */
+    border-color: #cc4c4c;
+}
+</style>
+</head>
+<body>
+<%
+String idx = request.getParameter("idx");
+
+Connection conn=null;
+Statement st = null;
+ResultSet rs = null;
+String sql = null;
+
+try{
+    conn = DB.getConnection();
+    
+   sql = " SELECT b.idx, b.title, b.content, b.ip, b.uid, b.boardtype, g.* FROM board b LEFT JOIN board_gallery g ON b.idx = g.bidx where b.idx = '"+idx+"' ";
+
+   st = conn.createStatement();
+   rs = st.executeQuery(sql);
+
+  }catch(Exception e){ 
+    e.printStackTrace();
+    out.println(sql);
+ }
+String uid = "";
+String title = "";
+String content = "";
+String ip = "";
+String originalfile[] = new String[10];
+String boardtype = "";
+int i=0;
+while (rs.next()) {
+	
+	title = rs.getString("title");
+	content = rs.getString("content");
+	ip = rs.getString("ip");
+	uid = rs.getString("uid");
+	originalfile[i] = rs.getString("originalfile");
+	boardtype = rs.getString("boardtype");
+	i++;
+}
+%>
+
+<%@ include file="op_top.jsp" %>
+<%@ include file="../include/side_nav.jsp" %>
+
+<%
+
+if (login_rank == 9) {
+	
+}else if (0 < login_rank && login_rank < 9) {
+	if(login_id == null || !login_id.equals(uid)) {
+		if (boardtype.equals("1") || boardtype.equals("0")) {
+			%>
+			<script>
+			alert("권한 없음");
+			location.replace("view.jsp?idx=<%= idx %>");
+			</script>
+			<%
+			return;
+		}
+	}
+}else {
+	if (boardtype.equals("1") || boardtype.equals("0")) {
+		%>
+		<script>
+		alert("권한 없음");
+		location.replace("view.jsp?idx=<%= idx %>");
+		</script>
+		<%
+		return;
+	}
+}
+
+%>
+
+<h1>갤러리 수정</h1><br>
+<form name="modify_form" action="modify_proc.jsp" method="post" enctype="multipart/form-data" class="write-form">
+	<input type="hidden" name="idx" value="<%= idx %>">
+	<input type="hidden" name="ip" value="<%= ip %>">
+	<table>
+
+		<tr>
+			<td>제목</td>
+			<td><input type="text" name="writetitle" value="<%= title %>"></td>
+		</tr>
+		
+		<tr>
+			<td>내용</td>
+			<td>
+				<textarea class="text" name="writetext"><%= content %></textarea>
+			</td>
+		</tr>
+		
+		<tr>
+			<td>파일</td>
+			<td>
+
+				
+
+			<div id="keep_file">
+			<%
+				for (int j=0; j<i; j++) {
+			%>
+					<div class="file-item">
+						<button type="button" class="file-delete-btn">X</button>
+						<span class="file-name-display">기존 파일 : <%= originalfile[j] %></span>
+						<input type="hidden" name="keep_file_<%= j %>" value="keep_file_<%= j %>">
+					</div>
+			<%
+				}
+			%>
+			</div>
+			
+			<div id="del_file">
+			
+			</div>
+			
+			<div id="file_container_0" class="file-container">
+			    	<input type="file" name="upfile_0" id="upfile_0" accept=".gif, .jpg, .png"><br>
+			</div>
+			
+			</td>
+		</tr>
+		
+		<tr>
+			<td colspan="2">
+				<input type="button" class="modify_sub" value="수정" onclick="gallery_modify_submit()">
+				<a href="view.jsp?idx=<%= idx %>"><button type="button" class="btn-cancel">취소</button></a>
+			</td>
+		</tr>
+		
+	</table>
+</form>
+
+<script>
+// X버튼 누르면 기존 파일 삭제하는 기믹
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. 모든 'X' 버튼 선택
+    const deleteButtons = document.querySelectorAll('#keep_file .file-delete-btn');
+    
+    // 2. 삭제된 파일을 모아둘 컨테이너 선택
+    const deletedFilesContainer = document.getElementById('del_file');
+
+    // 3. 각 버튼에 클릭 이벤트 리스너 등록
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            
+            // ⭐ 4. 사용자에게 삭제 여부를 확인합니다.
+            const isConfirmed = confirm("이 파일을 삭제하시겠습니까?");
+
+            // 사용자가 '확인'을 눌렀을 때만 처리합니다.
+            if (isConfirmed) {
+                // A. 가장 가까운 .file-item 요소를 찾습니다.
+                const fileItem = this.closest('.file-item');
+                
+                if (fileItem) {
+                    // B. file-item 내부에 있는 input[type=hidden] 요소를 찾습니다.
+                    const hiddenInput = fileItem.querySelector('input[type="hidden"]');
+                    
+                    if (hiddenInput) {
+                        // C. 서버에서 '삭제할 파일' 목록으로 인식하도록 name을 변경합니다.
+                        hiddenInput.name = 'deleted_files'; 
+                        
+                        // D. hidden input을 #del_file 컨테이너로 이동시킵니다.
+                        deletedFilesContainer.appendChild(hiddenInput);
+                    }
+
+                    // E. 파일 항목 (시각적인 부분)을 DOM에서 완전히 제거합니다.
+                    fileItem.remove();
+                    
+                    console.log('파일 삭제 및 hidden input 이동 완료.');
+                }
+            } else {
+                // 사용자가 '취소'를 누른 경우
+                console.log('파일 삭제가 취소되었습니다.');
+            }
+        });
+    });
+});
+</script>
+
+</body>
+</html>

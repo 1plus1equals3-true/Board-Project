@@ -301,7 +301,7 @@ try {
 
 </div>
 <br>
-<% if (login_rank >= 0) { %>
+<% if (login_rank > 0) { %>
 <a href="write_gallery.jsp"><button type="button" class="wwrite">글쓰기</button></a>
 <% } %>
 <br><br>
