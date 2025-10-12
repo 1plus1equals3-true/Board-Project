@@ -44,57 +44,71 @@ try {
 	rs3 = st3.executeQuery(sql3);
 	rs4 = st4.executeQuery(sql4);
 	
+	while (rs.next()) {
+	    String idx = rs.getString("idx");
+	    String title = rs.getString("title");
+	    
+	    Map<String, String> row = new HashMap<>();
+	    row.put("idx", idx);
+	    row.put("title", title);
+	    
+	    memberboardlist.add(row);
+	}
+
+	while (rs2.next()) {
+	    String idx = rs2.getString("idx");
+	    String title = rs2.getString("title");
+	    
+	    Map<String, String> row = new HashMap<>();
+	    row.put("idx", idx);
+	    row.put("title", title);
+	    
+	    Noticelist.add(row);
+	}
+
+	while (rs3.next()) {
+	    String idx = rs3.getString("idx");
+	    String title = rs3.getString("title");
+	    
+	    Map<String, String> row = new HashMap<>();
+	    row.put("idx", idx);
+	    row.put("title", title);
+	    
+	    anonymitylist.add(row);
+	}
+
+	while (rs4.next()) {
+	    String idx = rs4.getString("idx");
+	    String title = rs4.getString("title");
+	    
+	    Map<String, String> row = new HashMap<>();
+	    row.put("idx", idx);
+	    row.put("title", title);
+	    
+	    gallerylist.add(row);
+	}
+	
 }catch(Exception e){ 
     e.printStackTrace();
     out.println(sql);
     out.println(sql2);
     out.println(sql3);
     out.println(sql4);
+}finally {
+    try { if (rs != null) rs.close(); } catch (SQLException ignore) { }
+    try { if (rs2 != null) rs2.close(); } catch (SQLException ignore) { }
+    try { if (rs3 != null) rs3.close(); } catch (SQLException ignore) { }
+    try { if (rs4 != null) rs4.close(); } catch (SQLException ignore) { }
+    
+    try { if (st != null) st.close(); } catch (SQLException ignore) { }
+    try { if (st2 != null) st2.close(); } catch (SQLException ignore) { }
+    try { if (st3 != null) st3.close(); } catch (SQLException ignore) { }
+    try { if (st4 != null) st4.close(); } catch (SQLException ignore) { }
+    
+    try { if (conn != null) conn.close(); } catch (SQLException ignore) { }
 }
 
-while (rs.next()) {
-    String idx = rs.getString("idx");
-    String title = rs.getString("title");
-    
-    Map<String, String> row = new HashMap<>();
-    row.put("idx", idx);
-    row.put("title", title);
-    
-    memberboardlist.add(row);
-}
 
-while (rs2.next()) {
-    String idx = rs2.getString("idx");
-    String title = rs2.getString("title");
-    
-    Map<String, String> row = new HashMap<>();
-    row.put("idx", idx);
-    row.put("title", title);
-    
-    Noticelist.add(row);
-}
-
-while (rs3.next()) {
-    String idx = rs3.getString("idx");
-    String title = rs3.getString("title");
-    
-    Map<String, String> row = new HashMap<>();
-    row.put("idx", idx);
-    row.put("title", title);
-    
-    anonymitylist.add(row);
-}
-
-while (rs4.next()) {
-    String idx = rs4.getString("idx");
-    String title = rs4.getString("title");
-    
-    Map<String, String> row = new HashMap<>();
-    row.put("idx", idx);
-    row.put("title", title);
-    
-    gallerylist.add(row);
-}
 
     // request 객체에 데이터 저장
     request.setAttribute("memberboardlist", memberboardlist);

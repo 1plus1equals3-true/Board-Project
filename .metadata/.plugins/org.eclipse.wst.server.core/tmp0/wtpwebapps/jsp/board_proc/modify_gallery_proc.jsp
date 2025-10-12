@@ -11,215 +11,207 @@
     pageEncoding="UTF-8"%>
 <%@ page import="java.sql.*" %>
 <%@ page import="lib.DB" %>
-
-<%@ include file="op_top.jsp" %>
-
+<%@ page import="lib.MyFileRenamePolicy" %>
+<%@ page import="java.util.ArrayList" %>
+<%@ page import="java.util.List" %>
+    
 <%
-request.setCharacterEncoding("utf-8");
+// ========================================================
+// 1. 초기 설정 및 새 경로 생성 (작성 로직 재사용)
+// ========================================================
+String ip = java.net.Inet4Address.getLocalHost().getHostAddress();
+String fileNames[] = new String[10]; 
+String originalFileNames[] = new String[10]; 
 
-String sql = null;
-Connection conn=null;
-PreparedStatement ps = null;
-ResultSet rs = null;
+Date today = new Date();
+SimpleDateFormat yearFormat = new SimpleDateFormat("yyyyMMdd");
+String ymd = yearFormat.format(today);
 
-
-Date today = new Date(); // 현재 날짜와 시간 객체 생성
-SimpleDateFormat yearFormat = new SimpleDateFormat("yyyyMMdd"); // 년도 형식 지정
-String ymd = yearFormat.format(today); // 년도만 추출
-int intymd = Integer.parseInt(ymd);
-
-SimpleDateFormat filetimeFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS");
-String filetime = filetimeFormat.format(today); // 밀리초 까지
-
+// 고정 경로 (D:\\data)와 날짜 기반의 새로운 전체 경로 생성
 String path = "D:\\data";
-// 경로
-//out.println("절대 경로 : " + path + "<br/>");
-String dir = path + "\\board" + ymd;
-// 디렉토리 경로
+String dir = path + "\\board" + ymd; // ⭐ 새로운 파일이 저장될 경로
 
 Path directoryPath = Paths.get(dir);
-//디렉토리 자동생성
-	try {
-	    Files.createDirectory(directoryPath);
+try {
+    // 디렉토리가 없으면 생성 (이미 존재하면 예외 없이 넘어감)
+    Files.createDirectories(directoryPath);
+} catch (IOException e) {
+    // 디렉토리 생성 실패 시 즉시 종료
+    out.println("<script>alert('파일 저장 디렉토리 생성 실패.'); history.back();</script>");
+    return;
+}
 	
-	    System.out.println(directoryPath + " 디렉토리가 생성되었습니다.");
-	    
-	} catch (FileAlreadyExistsException e) {
-	    //System.out.println("디렉토리가 이미 존재합니다");
-	} catch (NoSuchFileException e) {
-	    System.out.println("디렉토리 경로가 존재하지 않습니다");
-	}catch (IOException e) {
-	    e.printStackTrace();
-	}
+int size = 1024 * 1024 * 10; // 10M
+String fileName = null;
+String originalFileName = "";
 
-	int size = 1024 * 1024 * 10; // 파일 사이즈 설정 : 10M
-	String fileName = null;    // 업로드한 파일 이름
-	String originalFileName = "";    //  서버에 중복된 파일 이름이 존재할 경우 처리하기 위해
+// JDBC 변수
+Connection conn = null;
+Statement st = null;
+ResultSet rs = null;
+PreparedStatement ps = null;
 
-	// cos.jar라이브러리 클래스를 가지고 실제 파일을 업로드하는 과정
-	MultipartRequest multi = null;
-	
-	try{
-	    // DefaultFileRenamePolicy 처리는 중복된 이름이 존재할 경우 처리할 때
-	    // request, 파일저장경로, 용량, 인코딩타입, 중복파일명에 대한 정책
-	    multi = new MultipartRequest(request, dir, size, "utf-8", new DefaultFileRenamePolicy());
-	    
-	    //String uid = multi.getParameter("uid");
-	    //System.out.println(uid);
-	    
-	    // 전송한 전체 파일이름들을 가져온다.
-	    Enumeration files = multi.getFileNames();
-	    String str = (String)files.nextElement();
-	    //System.out.println(str);
-	    
-	    
-	    //파일명 중복이 발생했을 때 정책에 의해 뒤에 1,2,3 처럼 숫자가 붙어 고유 파일명을 생성한다.
-	    // 이때 생성된 이름을 FilesystemName이라고 하여 그 이름 정보를 가져온다. (중복 처리)
-	    fileName = multi.getFilesystemName(str); //업로드 후 변경된 파일이름
-	    
-	    //실제 파일 이름을 가져온다.
-	    //out.print(fileName);
-	    //System.out.println(fileName);
-	    
-	    originalFileName = multi.getOriginalFileName(str); //업로드된 원래 파일이름
-	    //out.print(originalFileName);
-	    //System.out.println(originalFileName);
-     
+MultipartRequest multi = null; 
+String idx = null;
+boolean transactionSuccess = false;
+
+try {
+    // ========================================================
+    // 2. MultipartRequest 생성 및 파일 즉시 저장 (새 경로 dir 사용)
+    // ========================================================
+    // request, 파일저장경로, 용량, 인코딩타입, 중복파일명에 대한 정책
+	multi = new MultipartRequest(request, dir, size, "utf-8", new MyFileRenamePolicy());
     
-	}catch(Exception e){
-   		e.printStackTrace();
-	}
-	
-	int index = 0;
-	if (fileName != null) {
-		index = fileName.lastIndexOf(".");
-	}
-	//확장자 찾기
-	String extension ="";
-	if (index > 0) {
-		extension = fileName.substring(index);
-		//System.out.println(extension); //확장자 시스템 출력
-	}
-	
-	//업로드된 파일명 변경하기
-		String filetimeex = filetime + extension;
-		Path src = Paths.get(dir +"\\"+ fileName);
-	    Path dest = Paths.get(dir +"\\"+ filetimeex);
-		
-	    try {
-		    Path newFilePath = Files.move(src, dest);
+    // 2-1. idx 및 폼 데이터 수신
+    idx = multi.getParameter("idx");
 
-		    //System.out.println(newFilePath);
+    if (idx == null || idx.isEmpty()) {
+        throw new Exception("게시글 번호가 유효하지 않습니다.");
+    }
 
-		} catch (IOException e) {
-		    e.printStackTrace();
-		}
-	    
-	    if (fileName == null) {
-	    	filetimeex = null;
-	    	dir = null;
-	    }
+    String writetitle = multi.getParameter("writetitle");
+    String writetext = multi.getParameter("writetext");
+    String deletedFileOrders = multi.getParameter("deleted_file_ids"); // 삭제할 기존 파일 ID (PK)
+    
+    // 2-2. 전송한 새 파일 이름들을 배열에 저장
+    Enumeration files = multi.getFileNames();
+    
+    int i = 0;
+    while (files.hasMoreElements()) {
+    	
+        String name = (String)files.nextElement();
+        
+        // 서버에 저장된 이름 (dir에 저장됨)
+        fileName = multi.getFilesystemName(name);
+        
+        // 사용자가 업로드한 원래 파일 이름
+        originalFileName = multi.getOriginalFileName(name);
+        
+        if (fileName != null) {
+        	originalFileNames[i] = originalFileName;
+            fileNames[i] = fileName; // **fileNames 배열 사용**
+            i++;
+        }
+    }
+    
+    
 
-String idx = multi.getParameter("idx");
-String title = multi.getParameter("writetitle");
-String content = multi.getParameter("writetext");
-String ip = multi.getParameter("ip");
-String filecheck = multi.getParameter("filecheck");
-String original_file = "";
-String relative_dir = "";
+    // DB 연결 및 트랜잭션 시작
+    conn = DB.getConnection();
+    conn.setAutoCommit(false); 
 
+    // ========================================================
+    // 3. 기존 파일 삭제 처리 (deleted_file_ids 기준)
+    //    * 기존 파일은 기존 경로를 사용합니다. (DB에서 경로를 조회하지 않아도 됨)
+    // ========================================================
+    if (deletedFileOrders != null && !deletedFileOrders.isEmpty()) {
+        String[] ordersToDelete = deletedFileOrders.split(","); // 파일의 PK(idx) 값들
+        
+        // 3-1. 삭제할 파일의 upfile 이름과 relativedir을 DB에서 조회
+        StringBuilder inClause = new StringBuilder();
+        for (int j = 0; j < ordersToDelete.length; j++) {
+            inClause.append("?");
+            if (j < ordersToDelete.length - 1) inClause.append(",");
+        }
+        
+        String sql_select_del_files = 
+            "SELECT upfile, relativedir FROM board_gallery WHERE bidx = ? AND idx IN (" + inClause.toString() + ")"; // idx는 board_gallery의 PK
+        
+        ps = conn.prepareStatement(sql_select_del_files);
+        ps.setString(1, idx); // 게시글 idx
+        for (int j = 0; j < ordersToDelete.length; j++) {
+            ps.setInt(j + 2, Integer.parseInt(ordersToDelete[j]));
+        }
+        rs = ps.executeQuery();
+        
+        List<String[]> filesToDelete = new ArrayList<>(); // [upfile, relativedir] 쌍
+        while(rs.next()) {
+            filesToDelete.add(new String[]{rs.getString("upfile"), rs.getString("relativedir")}); 
+        }
+        rs.close(); ps.close();
 
+        // 3-2. DB에서 해당 파일 레코드 삭제
+        String sql_delete = 
+            "DELETE FROM board_gallery WHERE bidx = ? AND idx IN (" + inClause.toString() + ")"; // idx는 board_gallery의 PK
+        ps = conn.prepareStatement(sql_delete);
+        ps.setString(1, idx);
+        for (int j = 0; j < ordersToDelete.length; j++) {
+            ps.setInt(j + 2, Integer.parseInt(ordersToDelete[j]));
+        }
+        ps.executeUpdate();
+        ps.close();
+        
+        // 3-3. 서버 저장소에서 실제 파일 삭제 (조회된 경로 사용)
+        for (String[] fileInfo : filesToDelete) {
+            String savedFile = fileInfo[0];
+            String relativeDir = fileInfo[1]; // ⭐ 기존 경로 사용
+            
+            if (savedFile != null && relativeDir != null) {
+                File file = new File(relativeDir, savedFile); 
+                if (file.exists()) {
+                    file.delete();
+                }
+            }
+        }
+    }
+
+    // ========================================================
+    // 4. 게시글 내용 업데이트
+    // ========================================================
+    String sql_update_board = "UPDATE board SET title = ?, content = ?, ip = ? WHERE idx = ?";
+    ps = conn.prepareStatement(sql_update_board);
+    ps.setString(1, writetitle);
+    ps.setString(2, writetext);
+    ps.setString(3, ip); 
+    ps.setString(4, idx);
+    ps.executeUpdate();
+    ps.close();
+
+    // ========================================================
+    // 5. 새로운 파일 DB에 추가 (fileNames 배열 사용)
+    // ========================================================
+    
+    // ⭐ file_order 컬럼이 없으므로 제거하고, Auto-increment 되는 board_gallery.idx를 사용합니다.
+    
+    String sql_insert_gallery = "insert into board_gallery(bidx, upfile, originalfile, relativedir) " +
+           " values(?,?,?,?)";
+    
+    for (int j = 0; j < fileNames.length; j++) {
+        if (fileNames[j] != null) {
+            
+            ps = conn.prepareStatement(sql_insert_gallery);
+            
+            ps.setString(1, idx);
+            ps.setString(2, fileNames[j]); // upfile (새 경로에 저장된 이름)
+            ps.setString(3, originalFileNames[j]);
+            ps.setString(4, dir); // ⭐ 새로 생성된 경로 사용
+            
+            ps.executeUpdate();
+            ps.close();
+        }
+    }
+    
+    // ========================================================
+    // 6. 트랜잭션 커밋 및 완료
+    // ========================================================
+    conn.commit();
+    transactionSuccess = true;
+	 
+}catch(Exception e){ 
+	  if (conn != null) conn.rollback();
+      out.println("<script>alert('게시글 수정 중 오류가 발생했습니다.\\n에러: " + e.getMessage().replace("'", "\\'") + "'); history.back();</script>");
+}finally {
+    // DB 연결 종료
+    if (ps != null) ps.close();
+    if (rs != null) rs.close();
+    if (st != null) st.close();
+    if (conn != null) conn.close();
+}
+
+// 최종 리다이렉션
+if (transactionSuccess) {
+    %> <script type="text/javascript">
+        location.replace("../board/view.jsp?idx=<%=idx%>");
+    </script> <%
+}
 %>
-
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Modify</title>
-</head>
-<body>
-<%
-try{
-	 
-	 conn = DB.getConnection();
-		
-	 	//기존파일 삭제
-	 	{
-	 		sql = "select * from board where idx=?";
-			 ps = conn.prepareStatement(sql);
-			 
-			 ps.setString(1, idx);
-			 rs = ps.executeQuery();
-			 rs.next();
-			 original_file = rs.getString("upfile");
-			 relative_dir = rs.getString("relativedir");
-			 if (original_file != null && filecheck != null) {
-				 original_file = relative_dir + "\\" + original_file;
-				 //System.out.println(original_file);
-				 File file = new File(original_file);
-				 
-				if( file.exists() ){
-		    		if(file.delete()){
-		    			//System.out.println("파일삭제 성공");
-		    		}else{
-		    			System.out.println("파일삭제 실패");
-		    		}
-		 		}
-			 }
-	 	}
-	 	
-	 if (filecheck == null) {
-		sql = "update board set title=?,content=?,ip=? where idx=?";
-
-		ps = conn.prepareStatement(sql);
-
-		ps.setString(1, title);
-		ps.setString(2, content);
-		ps.setString(3, ip);
-		ps.setString(4, idx);
-	 }else {
-		sql = "update board set title=?,content=?,ip=?,upfile=?,originalfile=?,relativedir=? where idx=?";
-
-		ps = conn.prepareStatement(sql);
-
-		ps.setString(1, title);
-		ps.setString(2, content);
-		ps.setString(3, ip);
-		ps.setString(4, filetimeex);
-		ps.setString(5, originalFileName);
-		ps.setString(6, dir);
-		ps.setString(7, idx);
-	 }
-		
-	 ps.executeUpdate();
-	 
-	 	%>
-		<script>
-			//alert("수정 성공");
-			location.replace("view.jsp?idx=<%= idx %>");
-		</script>
-		<%
-	 
-	 //response.sendRedirect("View.jsp?uid="+a);
-
- 	
- }
- catch(Exception e){ 
-	  out.println(e.toString());
-	  out.println(sql);
-	}
- finally {
-	  	if (rs != null){
-		   rs.close();
-		}
-		if (ps != null){
-		   ps.close();
-		}
-		if (conn != null){
-		   conn.close();
-		}
- }
-
-%>
-</body>
-</html>

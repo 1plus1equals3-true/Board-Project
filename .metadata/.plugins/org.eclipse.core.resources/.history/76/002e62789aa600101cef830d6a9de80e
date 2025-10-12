@@ -1,0 +1,151 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*"%>       
+<%@ page import="java.util.Date" %>
+<%@ page import="java.text.SimpleDateFormat" %>
+<%@ page import="java.util.Arrays" %>
+<%@ page import="lib.DB" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Modify</title>
+<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/modify_gallery.css">
+</head>
+<body>
+<%
+String idx = request.getParameter("idx");
+
+Connection conn=null;
+Statement st = null;
+ResultSet rs = null;
+String sql = null;
+
+try{
+    conn = DB.getConnection();
+    
+   sql = " SELECT b.idx, b.title, b.content, b.ip, b.uid, b.boardtype, g.* FROM board b LEFT JOIN board_gallery g ON b.idx = g.bidx where b.idx = '"+idx+"' ";
+
+   st = conn.createStatement();
+   rs = st.executeQuery(sql);
+
+  }catch(Exception e){ 
+    e.printStackTrace();
+    out.println(sql);
+ }
+String uid = "";
+String title = "";
+String content = "";
+String ip = "";
+String originalfile[] = new String[10];
+String boardtype = "";
+int g_idx = 0;
+int i=0;
+while (rs.next()) {
+	
+	title = rs.getString("title");
+	content = rs.getString("content");
+	ip = rs.getString("ip");
+	uid = rs.getString("uid");
+	originalfile[i] = rs.getString("originalfile");
+	boardtype = rs.getString("boardtype");
+	g_idx = rs.getInt("g.idx"); // board_gallery 테이블의 PK
+	i++;
+}
+%>
+
+<%@ include file="op_top.jsp" %>
+<%@ include file="../include/side_nav.jsp" %>
+
+<%
+
+if (login_rank == 9) {
+	
+}else if (0 < login_rank && login_rank < 9) {
+	if(login_id == null || !login_id.equals(uid)) {
+		if (boardtype.equals("1") || boardtype.equals("0")) {
+			%>
+			<script>
+			alert("권한 없음");
+			location.replace("view.jsp?idx=<%= idx %>");
+			</script>
+			<%
+			return;
+		}
+	}
+}else {
+	if (boardtype.equals("1") || boardtype.equals("0")) {
+		%>
+		<script>
+		alert("권한 없음");
+		location.replace("view.jsp?idx=<%= idx %>");
+		</script>
+		<%
+		return;
+	}
+}
+
+%>
+
+<h1>갤러리 수정</h1><br>
+<form name="modify_form" action="../board_proc/modify_gallery_proc.jsp" method="post" enctype="multipart/form-data" class="write-form">
+	<input type="hidden" name="idx" value="<%= idx %>">
+	<input type="hidden" name="ip" value="<%= ip %>">
+	<table>
+
+		<tr>
+			<td>제목</td>
+			<td><input type="text" name="writetitle" value="<%= title %>"></td>
+		</tr>
+		
+		<tr>
+			<td>내용</td>
+			<td>
+				<textarea class="text" name="writetext"><%= content %></textarea>
+			</td>
+		</tr>
+		
+		<tr>
+			<td>파일</td>
+			<td>
+				<h2>첨부 파일 (<span id="current-file-count"><%= i %></span> / 10)</h2>
+
+				<div id="file-management-area">
+				    <ul id="file-list">
+				        <%-- 기존 파일 (DB에서 가져온 파일) --%>
+				        <% for (int j=0; j<i; j++) { %>
+				            <li data-file-id="<%= g_idx %>" class="file-item existing"> 
+				                <span class="file-name-display">기존 파일 : <%= originalfile[j] %></span>
+				                <button type="button" class="delete-btn" data-type="existing" data-file-id="<%= g_idx %>">❌</button>
+				                
+				                <input type="hidden" name="keep_file_<%= g_idx %>" value="<%= originalfile[j] %>">
+				            </li>
+				        <% } %>
+				    </ul>
+				    
+				    <%-- 2. 파일 선택 버튼 (UI용 버튼) --%>
+				    <button type="button" id="select-file-button" class="btn-select-file">파일 추가</button>
+				    
+				    <%-- 3. 실제 파일을 선택하는 임시 Input (숨김 처리, name과 multiple 속성 제거) --%>
+				    <input type="file" id="file-input-temp" style="display: none;" accept=".gif, .jpg, .png">
+				    
+				    <%-- ⭐ 4. 동적으로 Input이 추가될 숨김 영역 (새로 추가) ⭐ --%>
+				    <div id="dynamic-file-inputs-container" style="display: none;"></div>
+				</div>
+			</td>
+		</tr>
+		
+		<tr>
+			<td colspan="2">
+				<input type="button" class="modify_sub" value="수정" onclick="gallery_modify_submit()">
+				<a href="view.jsp?idx=<%= idx %>"><button type="button" class="btn-cancel">취소</button></a>
+			</td>
+		</tr>
+		
+	</table>
+</form>
+
+<script type="text/javascript" src="${pageContext.request.contextPath}/resources/js/modify_gallery.js"></script>
+
+</body>
+</html>

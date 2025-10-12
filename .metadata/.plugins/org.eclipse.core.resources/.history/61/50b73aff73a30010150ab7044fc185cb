@@ -1,0 +1,198 @@
+@charset "UTF-8";
+*{
+    margin: 0 auto;
+    padding: 0;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+/* --- 테이블 및 기본 폼 스타일 --- */
+.write-form table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin: 20px auto;
+    max-width: 600px;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.write-form h2 {
+    /* 파일 개수 표시용 H2 태그 스타일 */
+    font-size: 16px;
+    color: #495057;
+    margin-bottom: 10px;
+    text-align: left;
+    font-weight: bold;
+}
+
+.write-form td {
+    padding: 15px;
+    border: 1px solid #e9ecef;
+    text-align: left; /* 내부 요소가 left 정렬을 기본으로 하도록 */
+}
+
+.write-form td:first-child {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    color: #495057;
+    text-align: center;
+    width: 120px;
+}
+
+.write-form input[type="text"],
+.write-form textarea {
+    width: calc(100% - 24px);
+    padding: 10px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+    text-align: left;
+}
+
+.write-form textarea {
+    height: 200px;
+    resize: vertical;
+}
+
+.write-form .button-container {
+    text-align: right;
+}
+
+/* --- 제출/취소 버튼 스타일 --- */
+.write-form .modify_sub,
+.write-form .btn-cancel {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-left: 8px;
+}
+
+.write-form .modify_sub {
+    background-color: #007bff;
+    color: white;
+}
+
+.write-form .modify_sub:hover {
+    background-color: #0056b3;
+}
+
+.write-form .btn-cancel {
+    background-color: #6c757d;
+    color: white;
+}
+
+.write-form .btn-cancel:hover {
+    background-color: #5a6268;
+}
+
+.write-form a {
+    text-decoration: none;
+}
+
+
+/* --- 파일 관리 영역 스타일 --- */
+
+/* 파일 목록을 감싸는 영역 */
+#file-management-area {
+    padding: 10px;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+/* 파일 목록 (ul) */
+#file-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 15px 0;
+}
+
+/* 파일 목록 아이템 (li) */
+.file-item {
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    padding: 5px 0;
+    border-bottom: 1px solid #f1f3f5; /* 목록 구분선 */
+    font-size: 14px;
+}
+.file-item:last-child {
+    border-bottom: none;
+}
+
+/* 기존 파일 이름 */
+.file-name-display {
+    flex-grow: 1; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    text-align: left;
+    color: #343a40;
+}
+
+/* 새로 추가된 임시 파일 */
+.file-item.new .file-name-display {
+    color: #007bff; /* 새로 추가된 파일은 파란색 계열로 구분 */
+    font-style: italic;
+}
+
+/* --- 삭제 버튼 (❌) 스타일 (기존 .file-delete-btn을 .delete-btn으로 변경) --- */
+.delete-btn {
+    /* 기존 file-delete-btn 스타일 적용 */
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: 1px solid #e0baba;
+    border-radius: 50%;
+    background: #ffebeb;
+    color: #cc4c4c;
+    font-size: 12px;
+    line-height: 18px;
+    text-align: center;
+    cursor: pointer;
+    flex-shrink: 0; /* 크기 유지 */
+    transition: background-color 0.3s ease;
+}
+
+.delete-btn:hover {
+    background: #ffdede;
+    color: #a03c3c;
+    border-color: #cc4c4c;
+}
+
+/* --- 파일 추가 버튼 (#select-file-button) 스타일 --- */
+#select-file-button {
+    /* 기본 버튼 스타일 적용 */
+    padding: 8px 15px;
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    background-color: #007bff;
+    color: white;
+    width: 100%; /* 너비를 꽉 채우도록 */
+    box-sizing: border-box;
+}
+
+#select-file-button:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+#select-file-button:disabled {
+    background-color: #ced4da;
+    border-color: #adb5bd;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+/* --- 기존에 사용되던 스타일은 제거 또는 수정 --- */
+/* .file-container, .file-container input[type="file"], .file-container button, .file-delete-btn, 등은 위에서 새로운 선택자로 대체되거나 사용되지 않습니다. */

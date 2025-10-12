@@ -1,0 +1,123 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.*"%>
+<%@page import="java.awt.PageAttributes.OrientationRequestedType"%>
+<%@ page import="java.sql.*"%>
+<%@ page import="lib.DB" %>
+
+<%
+Connection conn = null;
+
+String sql = "";
+Statement st = null;
+ResultSet rs = null;
+List <Map<String, String>>memberboardlist = new ArrayList<>();
+
+String sql2 = "";
+Statement st2 = null;
+ResultSet rs2 = null;
+List <Map<String, String>>Noticelist = new ArrayList<>();
+
+String sql3 = "";
+Statement st3 = null;
+ResultSet rs3 = null;
+List <Map<String, String>>anonymitylist = new ArrayList<>();
+
+String sql4 = "";
+Statement st4 = null;
+ResultSet rs4 = null;
+List <Map<String, String>>gallerylist = new ArrayList<>();
+
+try {
+	conn = DB.getConnection();
+	
+	sql = "SELECT * FROM board WHERE boardtype=1 ORDER BY idx DESC LIMIT 5";
+	sql2 = "SELECT * FROM board WHERE boardtype=0 ORDER BY idx DESC LIMIT 5";
+	sql3 = "SELECT * FROM board WHERE boardtype=2 ORDER BY idx DESC LIMIT 5";
+	sql4 = "SELECT * FROM board WHERE boardtype=3 ORDER BY idx DESC LIMIT 6";
+	
+	st = conn.createStatement();
+	st2 = conn.createStatement();
+	st3 = conn.createStatement();
+	st4 = conn.createStatement();
+	rs = st.executeQuery(sql);
+	rs2 = st2.executeQuery(sql2);
+	rs3 = st3.executeQuery(sql3);
+	rs4 = st4.executeQuery(sql4);
+	
+	while (rs.next()) {
+	    String idx = rs.getString("idx");
+	    String title = rs.getString("title");
+	    
+	    Map<String, String> row = new HashMap<>();
+	    row.put("idx", idx);
+	    row.put("title", title);
+	    
+	    memberboardlist.add(row);
+	}
+
+	while (rs2.next()) {
+	    String idx = rs2.getString("idx");
+	    String title = rs2.getString("title");
+	    
+	    Map<String, String> row = new HashMap<>();
+	    row.put("idx", idx);
+	    row.put("title", title);
+	    
+	    Noticelist.add(row);
+	}
+
+	while (rs3.next()) {
+	    String idx = rs3.getString("idx");
+	    String title = rs3.getString("title");
+	    
+	    Map<String, String> row = new HashMap<>();
+	    row.put("idx", idx);
+	    row.put("title", title);
+	    
+	    anonymitylist.add(row);
+	}
+
+	while (rs4.next()) {
+	    String idx = rs4.getString("idx");
+	    String title = rs4.getString("title");
+	    
+	    Map<String, String> row = new HashMap<>();
+	    row.put("idx", idx);
+	    row.put("title", title);
+	    
+	    gallerylist.add(row);
+	}
+	
+}catch(Exception e){ 
+    e.printStackTrace();
+    out.println(sql);
+    out.println(sql2);
+    out.println(sql3);
+    out.println(sql4);
+}finally {
+    // 5. ⭐ finally 블록에서 모든 자원을 안전하게 해제 ⭐
+    try { if (rs != null) rs.close(); } catch (SQLException ignore) { }
+    try { if (rs2 != null) rs2.close(); } catch (SQLException ignore) { }
+    try { if (rs3 != null) rs3.close(); } catch (SQLException ignore) { }
+    try { if (rs4 != null) rs4.close(); } catch (SQLException ignore) { }
+    
+    try { if (st != null) st.close(); } catch (SQLException ignore) { }
+    try { if (st2 != null) st2.close(); } catch (SQLException ignore) { }
+    try { if (st3 != null) st3.close(); } catch (SQLException ignore) { }
+    try { if (st4 != null) st4.close(); } catch (SQLException ignore) { }
+    
+    try { if (conn != null) conn.close(); } catch (SQLException ignore) { }
+}
+
+
+
+    // request 객체에 데이터 저장
+    request.setAttribute("memberboardlist", memberboardlist);
+    request.setAttribute("Noticelist", Noticelist);
+    request.setAttribute("anonymitylist", anonymitylist);
+    request.setAttribute("gallerylist", gallerylist);
+
+    // 뷰(View) 역할을 하는 JSP로 포워딩
+    RequestDispatcher dispatcher = request.getRequestDispatcher("../board/main.jsp");
+    dispatcher.forward(request, response);
+%>

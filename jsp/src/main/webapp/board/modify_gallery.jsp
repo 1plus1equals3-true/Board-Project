@@ -10,175 +10,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Modify</title>
-<style>
-*{
-	margin: 0 auto;
-	padding: 0;
-	text-align: center;
-	box-sizing: border-box;
-}
-.write-form table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-    margin: 20px auto;
-    max-width: 600px;
-    background-color: #fff;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.write-form td {
-    padding: 15px;
-    border: 1px solid #e9ecef;
-}
-
-.write-form td:first-child {
-    background-color: #f8f9fa;
-    font-weight: bold;
-    color: #495057;
-    text-align: center;
-    width: 120px;
-}
-
-.write-form input[type="text"],
-.write-form textarea {
-    width: calc(100% - 24px);
-    padding: 10px 12px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    font-size: 14px;
-    box-sizing: border-box;
-    text-align: left;
-}
-
-.write-form textarea {
-    height: 200px;
-    resize: vertical;
-}
-
-.write-form .button-container {
-    text-align: right;
-}
-
-.write-form .modify_sub,
-.write-form .btn-cancel {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-left: 8px;
-}
-
-.write-form .modify_sub {
-    background-color: #007bff;
-    color: white;
-}
-
-.write-form .modify_sub:hover {
-    background-color: #0056b3;
-}
-
-.write-form .btn-cancel {
-    background-color: #6c757d;
-    color: white;
-}
-
-.write-form .btn-cancel:hover {
-    background-color: #5a6268;
-}
-
-/* a 태그 안에 button을 넣었을 때 스타일 */
-.write-form a {
-    text-decoration: none;
-}
-
-.file-container {
-  /* 세로 정렬(column) 대신 가로 정렬(row)로 변경 */
-  display: flex;
-  flex-direction: row; 
-  align-items: center; /* 세로 중앙 정렬 */
-  gap: 5px; /* 요소들 사이의 간격 */
-
-  /* 나머지 디자인 스타일은 그대로 유지 */
-  padding: 3px;
-  border-radius: 12px;
-  background-color: white;
-}
-
-/* 파일 입력 필드 스타일 */
-.file-container input[type="file"] {
-  /* 너비가 너무 넓어지지 않도록 조정 */
-  width: 100%;
-  max-width: 350px; /* 적절한 너비로 조정하세요 */
-  font-family: Arial, sans-serif;
-  color: #555;
-  border: 1px solid #BDBDBD;
-  border-radius: 8px;
-  padding: 10px 15px;
-}
-
-/* 버튼 스타일 */
-.file-container button {
-  padding: 10px 18px;
-  font-family: Arial, sans-serif;
-  font-size: 14px;
-  color: #555;
-  background-color: #E0E0E0;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  width: fit-content;
-}
-
-/* 호버 효과 */
-.file-container button:hover {
-  background-color: #BDBDBD;
-}
-
-/* 기존파일 보여주는 박스 */
-.file-item {
-    display: flex; 
-    align-items: center; 
-    gap: 10px; 
-    padding: 5px 0;
-}
-
-/* 기존파일 이름 */
-.file-name-display {
-    flex-grow: 1; 
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-    text-align: left;
-}
-
-/* 기존파일 삭제버튼 */
-.file-delete-btn {
-	width: 20px;
-    height: 20px;
-    padding: 0;
-    border: 1px solid #e0baba;
-    border-radius: 50%;
-    background: #ffebeb;
-    color: #cc4c4c;
-    font-size: 12px;
-    line-height: 18px;
-    text-align: center;
-    cursor: pointer;
-    flex-shrink: 0;
-}
-
-.file-delete-btn:hover {
-	background: #ffdede; /* 배경색 살짝 어둡게 */
-    color: #a03c3c;         /* 아이콘 색상 진하게 */
-    border-color: #cc4c4c;
-}
-</style>
+<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/modify_gallery.css">
 </head>
 <body>
 <%
@@ -200,13 +32,20 @@ try{
   }catch(Exception e){ 
     e.printStackTrace();
     out.println(sql);
- }
+ }finally {
+	    try { if (rs != null) rs.close(); } catch (SQLException ignore) { }
+	    try { if (st != null) st.close(); } catch (SQLException ignore) { }
+	    try { if (conn != null) conn.close(); } catch (SQLException ignore) { }
+	}
+
+
 String uid = "";
 String title = "";
 String content = "";
 String ip = "";
 String originalfile[] = new String[10];
 String boardtype = "";
+int g_idx_arr[] = new int[10];
 int i=0;
 while (rs.next()) {
 	
@@ -216,6 +55,7 @@ while (rs.next()) {
 	uid = rs.getString("uid");
 	originalfile[i] = rs.getString("originalfile");
 	boardtype = rs.getString("boardtype");
+	g_idx_arr[i] = rs.getInt("g.idx"); // board_gallery 테이블의 PK
 	i++;
 }
 %>
@@ -254,7 +94,7 @@ if (login_rank == 9) {
 %>
 
 <h1>갤러리 수정</h1><br>
-<form name="modify_form" action="modify_proc.jsp" method="post" enctype="multipart/form-data" class="write-form">
+<form name="modify_form" action="../board_proc/modify_gallery_proc.jsp" method="post" enctype="multipart/form-data" class="write-form">
 	<input type="hidden" name="idx" value="<%= idx %>">
 	<input type="hidden" name="ip" value="<%= ip %>">
 	<table>
@@ -274,37 +114,37 @@ if (login_rank == 9) {
 		<tr>
 			<td>파일</td>
 			<td>
+			 	<input type="hidden" name="deleted_file_ids" id="deleted-file-ids-input" value="">
+        		<input type="hidden" name="total_file_count" id="total-file-count" value="<%= i %>">
+				<h2>첨부 파일 (<span id="current-file-count"><%= i %></span> / 10)</h2>
 
-				
-
-			<div id="keep_file">
-			<%
-				for (int j=0; j<i; j++) {
-			%>
-					<div class="file-item">
-						<button type="button" class="file-delete-btn">X</button>
-						<span class="file-name-display">기존 파일 : <%= originalfile[j] %></span>
-						<input type="hidden" name="keep_file_<%= j %>" value="file_<%= j %>">
-					</div>
-			<%
-				}
-			%>
-			</div>
-			
-			<div id="del_file">
-			
-			</div>
-			
-			<div id="file_container_0" class="file-container">
-			    	<input type="file" name="upfile_0" id="upfile_0" accept=".gif, .jpg, .png"><br>
-			</div>
-			
+				<div id="file-management-area">
+				    <ul id="file-list">
+				        <%-- 기존 파일 (DB에서 가져온 파일) --%>
+				        <% for (int j=0; j<i; j++) { %>
+				            <li data-file-id="<%= g_idx_arr[j] %>" class="file-item existing"> 
+				                <span class="file-name-display">기존 파일 : <%= originalfile[j] %></span>
+				                <button type="button" class="delete-btn" data-type="existing" data-file-id="<%= g_idx_arr[j] %>">❌</button>
+						        <input type="hidden" name="keep_file_<%= g_idx_arr[j] %>" value="<%= originalfile[j] %>">
+						    </li>
+				        <% } %>
+				    </ul>
+				    
+				    <%-- 2. 파일 선택 버튼 (UI용 버튼) --%>
+				    <button type="button" id="select-file-button" class="btn-select-file">파일 추가</button>
+				    
+				    <%-- 3. 실제 파일을 선택하는 임시 Input (숨김 처리, name과 multiple 속성 제거) --%>
+				    <input type="file" id="file-input-temp" style="display: none;" accept=".gif, .jpg, .png">
+				    
+				    <%-- ⭐ 4. 동적으로 Input이 추가될 숨김 영역 (새로 추가) ⭐ --%>
+				    <div id="dynamic-file-inputs-container" style="display: none;"></div>
+				</div>
 			</td>
 		</tr>
 		
 		<tr>
 			<td colspan="2">
-				<input type="button" class="modify_sub" value="수정" onclick="gallery_modify_submit()">
+				<input type="submit" class="modify_sub" value="수정">
 				<a href="view.jsp?idx=<%= idx %>"><button type="button" class="btn-cancel">취소</button></a>
 			</td>
 		</tr>

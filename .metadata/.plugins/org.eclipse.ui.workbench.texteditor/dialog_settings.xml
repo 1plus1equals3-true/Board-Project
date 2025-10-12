@@ -3,21 +3,21 @@
 	<item key="hasShownOverlayPopupBefore" value="true"/>
 	<item key="replaceBarOpen" value="true"/>
 	<list key="searchhistory">
-		<item value="$"/>
-		<item value="--"/>
-		<item value="keepfiles.length"/>
-		<item value="hasKeptFiles"/>
-		<item value="additionalContent"/>
-		<item value="myCheckbox"/>
-		<item value="ip"/>
+		<item value="delete_file"/>
+		<item value="total"/>
+		<item value="file-count"/>
+		<item value="file"/>
+		<item value="savedFileName"/>
+		<item value="view"/>
+		<item value="next"/>
+		<item value="g_idx"/>
+		<item value="saved"/>
+		<item value="게시글"/>
+		<item value="sql"/>
+		<item value="string sql"/>
 		<item value="originalfile"/>
-		<item value="pass"/>
-		<item value="file-container"/>
-		<item value="upfilelength"/>
-		<item value="upfile"/>
-		<item value="boardtype"/>
-		<item value="wdelete"/>
-		<item value="scale"/>
+		<item value="origi"/>
+		<item value="select-file-button"/>
 	</list>
 	<list key="replacehistory">
 		<item value="`"/>

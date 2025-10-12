@@ -1,0 +1,231 @@
+<%@page import="java.util.Enumeration"%>
+<%@page import="com.oreilly.servlet.multipart.DefaultFileRenamePolicy"%>
+<%@page import="com.oreilly.servlet.MultipartRequest"%>
+<%@page import="java.io.File"%>
+<%@ page import="java.util.Date" %>
+<%@ page import="java.text.SimpleDateFormat" %>
+<%@ page import="java.io.IOException"%>
+<%@ page import="java.nio.file.*"%>
+
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*" %>
+<%@ page import="lib.DB" %>
+<%@ page import="lib.MyFileRenamePolicy" %>
+<%@ page import="java.util.ArrayList" %>
+<%@ page import="java.util.List" %>
+    
+<%
+// ========================================================
+// 1. 초기 설정 및 변수 준비
+// ========================================================
+String ip = java.net.Inet4Address.getLocalHost().getHostAddress();
+// 임시 저장 파일 정보를 담을 변수 (배열 크기는 넉넉하게 유지)
+String tempFileNames[] = new String[10]; 
+String originalFileNames[] = new String[10]; 
+
+String tempDir = "D:\\data"; // 임시 저장 경로 (반드시 존재해야 함)
+String dir = null; // 최종 파일이 저장될 기존 경로 (DB에서 조회)
+
+int size = 1024 * 1024 * 10; // 10M
+
+// JDBC 변수
+Connection conn = null;
+Statement st = null;
+ResultSet rs = null;
+PreparedStatement ps = null;
+
+MultipartRequest multi = null; 
+String idx = null;
+boolean transactionSuccess = false;
+
+try {
+    // ========================================================
+    // 2. MultipartRequest 단일 생성 및 임시 파일 저장
+    //    -> 파일은 tempDir에 임시 저장되고, idx, 제목, 내용 등의 폼 데이터가 multi에 파싱됨.
+    // ========================================================
+    multi = new MultipartRequest(request, tempDir, size, "utf-8", new MyFileRenamePolicy());
+    
+    // multi 객체에서 idx를 가져옴
+    idx = multi.getParameter("idx");
+    
+    if (idx == null || idx.isEmpty()) {
+        // DB 연결 전에 idx를 체크하고 오류 발생 시 바로 종료
+        throw new Exception("게시글 번호가 유효하지 않습니다.");
+    }
+    
+    // DB 연결 및 트랜잭션 시작 (idx를 확보한 후에)
+    conn = DB.getConnection();
+    conn.setAutoCommit(false); 
+
+    // ========================================================
+    // 3. 기존 경로 조회 및 파일 이동 처리
+    // ========================================================
+    
+    // 3-1. 기존 파일 저장 경로(relativedir) 조회
+    String sql_select_dir = "SELECT relativedir FROM board WHERE idx = ?";
+    ps = conn.prepareStatement(sql_select_dir);
+    ps.setString(1, idx);
+    rs = ps.executeQuery();
+    
+    if (rs.next()) {
+        dir = rs.getString("relativedir");
+    }
+    rs.close(); ps.close(); // 자원 닫기
+    
+    if (dir == null || dir.isEmpty()) {
+        throw new Exception("기존 파일 저장 경로를 찾을 수 없습니다. (relativedir 없음)");
+    }
+    
+    // 3-2. 임시 저장된 파일들을 실제 경로(dir)로 이동
+    Enumeration files = multi.getFileNames();
+    int i = 0;
+    while (files.hasMoreElements()) {
+        String name = (String)files.nextElement();
+        String savedFileName = multi.getFilesystemName(name); // tempDir에 저장된 이름
+        String originalFileName = multi.getOriginalFileName(name);
+        
+        if (savedFileName != null) {
+            File tempFile = new File(tempDir, savedFileName);
+            File actualFile = new File(dir, savedFileName);
+            
+            // 파일 이동
+            if (tempFile.exists() && !tempFile.renameTo(actualFile)) {
+                 // 파일 이동 실패는 트랜잭션을 깨야 함 (throw)
+                 throw new IOException("파일 이동 실패: " + savedFileName);
+            }
+            
+            // 이동 성공 시 배열에 저장 (DB 저장을 위해)
+            originalFileNames[i] = originalFileName;
+            tempFileNames[i] = savedFileName;
+            i++;
+        }
+    }
+
+    // 3-3. 폼 데이터 수신 (MultiPartRequest에서 가져옴)
+    String writetitle = multi.getParameter("writetitle");
+    String writetext = multi.getParameter("writetext");
+    String deletedFileOrders = multi.getParameter("deleted_file_ids"); // 삭제할 기존 파일 ID (file_order 값)
+    
+ 	// ========================================================
+    // 4. 기존 파일 삭제 처리 (deleted_file_ids 기준)
+    //    * 컬럼명: savedfile -> upfile
+    //    * 조건: file_order -> idx (board_gallery의 PK)
+    // ========================================================
+    if (deletedFileOrders != null && !deletedFileOrders.isEmpty()) {
+        String[] ordersToDelete = deletedFileOrders.split(","); // 이제 이 값들은 파일의 PK(idx)입니다.
+        
+        // 4-1. 삭제할 파일의 upfile 이름을 DB에서 조회
+        StringBuilder inClause = new StringBuilder();
+        for (int j = 0; j < ordersToDelete.length; j++) {
+            inClause.append("?");
+            if (j < ordersToDelete.length - 1) inClause.append(",");
+        }
+        
+        // ⭐ savedfile -> upfile, file_order -> idx로 변경
+        String sql_select_del_files = 
+            "SELECT upfile FROM board_gallery WHERE bidx = ? AND idx IN (" + inClause.toString() + ")"; // ⭐ idx는 board_gallery의 PK
+        
+        ps = conn.prepareStatement(sql_select_del_files);
+        ps.setString(1, idx); // 게시글 idx
+        for (int j = 0; j < ordersToDelete.length; j++) {
+            ps.setInt(j + 2, Integer.parseInt(ordersToDelete[j]));
+        }
+        rs = ps.executeQuery();
+        
+        List<String> filesToDelete = new ArrayList<>(); 
+        while(rs.next()) {
+            filesToDelete.add(rs.getString("upfile")); // ⭐ upfile로 변경
+        }
+        rs.close(); ps.close();
+
+        // 4-2. DB에서 해당 파일 레코드 삭제
+        // ⭐ file_order -> idx로 변경
+        String sql_delete = 
+            "DELETE FROM board_gallery WHERE bidx = ? AND idx IN (" + inClause.toString() + ")"; // ⭐ idx는 board_gallery의 PK
+        ps = conn.prepareStatement(sql_delete);
+        ps.setString(1, idx);
+        for (int j = 0; j < ordersToDelete.length; j++) {
+            ps.setInt(j + 2, Integer.parseInt(ordersToDelete[j]));
+        }
+        ps.executeUpdate();
+        ps.close();
+        
+        // 4-3. 서버 저장소에서 실제 파일 삭제 (dir 변수 = 기존 경로)
+        for (String savedFile : filesToDelete) { // savedFile은 이제 upfile의 이름
+            if (savedFile != null) {
+                File file = new File(dir, savedFile); 
+                if (file.exists()) {
+                    file.delete();
+                }
+            }
+        }
+    }
+
+    // ========================================================
+    // 5. 게시글 내용 업데이트
+    // ========================================================
+    String sql_update_board = "UPDATE board SET title = ?, content = ?, ip = ? WHERE idx = ?";
+    ps = conn.prepareStatement(sql_update_board);
+    ps.setString(1, writetitle);
+    ps.setString(2, writetext);
+    ps.setString(3, ip); 
+    ps.setString(4, idx);
+    ps.executeUpdate();
+    ps.close();
+
+ 	// ========================================================
+    // 6. 새로운 파일 DB에 추가 (file_order 컬럼이 없으므로 제거)
+    //    * 컬럼명: file_order 제거, upfile 사용
+    // ========================================================
+    
+    // 6-1. [로직 제거] file_order를 조회하는 로직은 필요 없습니다.
+    //      (Auto Increment되는 idx만 사용할 경우)
+
+    // 6-2. 새로운 파일들 DB에 INSERT
+    // ⭐ file_order 컬럼을 제외한 SQL
+    String sql_insert_gallery = "insert into board_gallery(bidx, upfile, originalfile, relativedir) " +
+           " values(?,?,?,?)";
+    
+    // ⭐ 순서 계산 (currentOrder) 로직 제거
+    for (int j = 0; j < tempFileNames.length; j++) {
+        if (tempFileNames[j] != null) {
+            
+            ps = conn.prepareStatement(sql_insert_gallery);
+            
+            ps.setString(1, idx);
+            ps.setString(2, tempFileNames[j]); // upfile
+            ps.setString(3, originalFileNames[j]);
+            ps.setString(4, dir); // 기존 경로
+            // ⭐ file_order 관련 ps.setInt(5, ...) 로직 제거
+            
+            ps.executeUpdate();
+            ps.close();
+        }
+    }
+    
+    // ========================================================
+    // 7. 트랜잭션 커밋 및 완료
+    // ========================================================
+    conn.commit();
+    transactionSuccess = true;
+	 
+}catch(Exception e){ 
+	  if (conn != null) conn.rollback();
+	  // 디버깅을 위해 에러 메시지를 alert에 자세히 표시합니다.
+      out.println("<script>alert('게시글 수정 중 오류가 발생했습니다.\\n에러: " + e.getMessage().replace("'", "\\'") + "'); history.back();</script>");
+}finally {
+    // DB 연결 종료
+    if (ps != null) ps.close();
+    if (rs != null) rs.close();
+    if (st != null) st.close();
+    if (conn != null) conn.close();
+}
+
+// 최종 리다이렉션
+if (transactionSuccess) {
+    %> <script type="text/javascript">
+        location.replace("view.jsp?idx=<%=idx%>");
+    </script> <%
+}
+%>

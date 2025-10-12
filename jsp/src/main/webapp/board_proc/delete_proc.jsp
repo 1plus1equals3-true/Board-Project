@@ -55,16 +55,18 @@ try{
     String upfile = null;
     String upfiles[] = new String[10];////
   	String originaldir = "";
+    String b_up = null;
+    String b_dir = null;
     
     {
-    	sql = "SELECT b.idx, g.* from board b LEFT JOIN board_gallery g ON b.idx = g.bidx WHERE b.idx=?";
+    	sql = "SELECT b.idx, b.upfile AS b_up, b.relativedir AS b_dir, g.* from board b LEFT JOIN board_gallery g ON b.idx = g.bidx WHERE b.idx=?";
 		 ps = conn.prepareStatement(sql);
 		 ps.setString(1, idx);
 		 rs = ps.executeQuery();
 		 int i=0;
-		 while (rs.next()) { upfiles[i] = rs.getString("upfile"); originaldir = rs.getString("relativedir"); i++; }
-		 if (upfile != null) { // BOARD DB에 데이터를 저장하는 부분 전부 수정해야함
-			 String del_file = originaldir+"\\"+upfile;
+		 while (rs.next()) { upfiles[i] = rs.getString("upfile"); originaldir = rs.getString("relativedir"); b_up = rs.getString("b_up"); b_dir = rs.getString("b_dir"); i++; }
+		 if (b_up != null) {
+			 String del_file = b_dir+"\\"+b_up;
 			 File file = new File(del_file);
 			 if( file.exists() ){
 		    		if(file.delete()){

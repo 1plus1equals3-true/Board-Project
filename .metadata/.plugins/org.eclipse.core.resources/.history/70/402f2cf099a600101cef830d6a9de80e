@@ -1,0 +1,173 @@
+//======================== 전역 상태 관리 ===============================
+const MAX_FILES = 10;
+
+let fileIndexCounter = 0;
+
+let initialFileCount = parseInt(document.getElementById('total-file-count').value); 
+
+//===================================================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    const fileList = document.getElementById('file-list');
+	
+    // const actualInput = document.getElementById('file-input-actual'); // ❌ 제거
+    const tempInput = document.getElementById('file-input-temp'); // ⭐ 새로 정의: 임시 Input
+    const dynamicContainer = document.getElementById('dynamic-file-inputs-container'); // ⭐ 새로 정의: 동적 Input 컨테이너
+    const selectButton = document.getElementById('select-file-button');
+
+    // 1. '파일 추가' 버튼 클릭 -> 숨겨진 Input 실행
+    selectButton.addEventListener('click', () => {
+        // ⭐ 파일 제한 초과 시 선택 방지
+        if (getOverallFileCount() >= MAX_FILES) {
+            alert(`더 이상 파일을 추가할 수 없습니다. (최대 ${MAX_FILES}개)`);
+            return;
+        }
+        // ⭐ tempInput을 클릭하도록 변경
+        tempInput.click();
+    });
+
+    // 2. 실제 Input(tempInput)에 파일이 선택되었을 때
+    // ⭐ 리스너를 tempInput에 연결합니다. (multiple이 없으므로 files[0]만 처리)
+    tempInput.addEventListener('change', (e) => {
+        // tempInput은 multiple이 없으므로 선택된 파일은 e.target.files[0] 하나입니다.
+        const selectedFile = e.target.files[0];
+        
+        // 🚨 Input value를 비워야 다음에 같은 파일을 선택해도 change 이벤트가 발생함
+        tempInput.value = ''; 
+
+        if (selectedFile) {
+            // 파일 개수 제한 체크
+            if (getOverallFileCount() < MAX_FILES) {
+                
+                // ⭐ 핵심 로직: 파일 객체를 동적으로 생성된 Input에 할당
+                const fileId = 'new_' + fileIndexCounter++;
+                
+                // 1. 서버 전송용 <input type="file"> 요소 생성
+                const permanentInput = createPermanentFileInput(fileId, selectedFile);
+
+                // 2. 폼에 추가
+                dynamicContainer.appendChild(permanentInput);
+                
+                // 3. UI에 목록 추가
+                renderNewFileItem(selectedFile.name, fileId);
+                
+            } else {
+                alert(`"${selectedFile.name}" 파일을 제외하고 처리되었습니다. (최대 ${MAX_FILES}개)`);
+            }
+        }
+        
+        updateFileCountDisplay();
+    });
+
+    // 3. 파일 목록 전체에 대한 삭제 이벤트 위임 (B. 새로 선택한 임시 파일 삭제 처리 수정)
+    fileList.addEventListener('click', (e) => {
+        if (!e.target.classList.contains('delete-btn')) return;
+
+        const button = e.target;
+        const type = button.dataset.type;
+        const fileId = button.dataset.fileId;
+        const fileItem = button.closest('.file-item');
+
+        if (!confirm("이 파일을 삭제하시겠습니까?")) return;
+
+        if (type === 'existing') {
+            // A. 기존 파일 삭제 처리 (로직 유지)
+            const deletedInput = document.getElementById('deleted-file-ids-input');
+            deletedInput.value += (deletedInput.value ? ',' : '') + fileId;
+            
+            // keep_file hidden input 제거 (서버에서 유지할 파일 목록에서 제외)
+            fileItem.querySelector(`input[name="keep_file_${fileId}"]`).remove();
+            
+        } else if (type === 'new') {
+            // ⭐ B. 새로 선택한 파일 삭제 처리 (JS 배열 대신 동적 Input 제거)
+            
+            // 폼에서 해당 <input name="upfile_N"> 요소를 제거
+            const inputName = 'upfile_' + fileId.replace('new_', '');
+            const permanentInput = dynamicContainer.querySelector(`input[name="${inputName}"]`);
+            if (permanentInput) {
+                permanentInput.remove();
+            }
+            
+            // 기존 filesToUpload 배열 관련 코드는 제거합니다.
+        }
+
+        // UI에서 제거
+        fileItem.remove();
+        updateFileCountDisplay();
+    });
+    
+    // 4. Submit 시 파일 객체를 최종 Input에 담는 처리 (❌ 이 로직 전체 제거)
+    document.forms['modify_form'].addEventListener('submit', (e) => {
+        // ❌ DataTransfer를 통한 files 속성 조작 로직이 필요 없습니다!
+        // 파일들은 이미 동적으로 생성된 Input 요소에 담겨 폼에 추가되어 있습니다.
+        
+        if (getOverallFileCount() === 0) {
+             alert("하나 이상의 파일을 업로드하거나 기존 파일을 유지해야 합니다.");
+             e.preventDefault(); // 파일이 없으면 전송 방지
+        }
+    });
+
+    // 초기 파일 카운트 업데이트
+    updateFileCountDisplay();
+});
+
+//======================== 헬퍼 함수 ===============================
+// ⭐ 새로 추가된 함수: 파일 객체를 담은 숨겨진 Input을 생성합니다.
+function createPermanentFileInput(fileId, fileObject) {
+    const inputName = 'upfile_' + fileId.replace('new_', '');
+
+    const permanentInput = document.createElement('input');
+    permanentInput.type = 'file';
+    permanentInput.name = inputName; 
+    permanentInput.style.display = 'none';
+    
+    // DataTransfer 객체를 사용하여 파일 객체를 Input에 할당 (핵심)
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(fileObject);
+    permanentInput.files = dataTransfer.files;
+
+    return permanentInput;
+}
+
+
+// 현재 총 파일 개수 계산 함수 (기존 파일 + 임시 파일)
+function getOverallFileCount() {
+    // #file-list의 모든 .file-item 개수를 세는 것이 가장 정확함
+    return document.querySelectorAll('#file-list .file-item').length;
+}
+
+// UI에 새로운 파일 항목을 추가하는 함수
+function renderNewFileItem(fileName, fileId) {
+    const li = document.createElement('li');
+    li.className = 'file-item new';
+    li.dataset.fileId = fileId;
+    li.innerHTML = `
+        <span class="file-name-display">새 파일 : ${fileName}</span>
+        <button type="button" class="delete-btn" data-type="new" data-file-id="${fileId}">❌</button>
+    `;
+    document.getElementById('file-list').appendChild(li);
+}
+
+// 파일 개수 표시를 업데이트하는 함수
+function updateFileCountDisplay() {
+    const count = getOverallFileCount();
+    document.getElementById('current-file-count').textContent = count;
+    
+    const selectButton = document.getElementById('select-file-button');
+    if (count >= MAX_FILES) {
+        selectButton.disabled = true;
+        selectButton.textContent = '파일 추가 (최대 개수 도달)';
+    } else {
+        selectButton.disabled = false;
+        selectButton.textContent = '파일 추가';
+    }
+}
+
+
+function gallery_modify_submit() {
+    const form = document.forms['modify_form'];
+
+    if (form) {
+        form.submit();
+    }
+}
